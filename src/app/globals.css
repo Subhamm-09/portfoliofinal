@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Evening";
+  src: url("/Evening-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-serif: var(--font-cormorant);
+  --font-sans: var(--font-inter);
+  --font-dorsa: var(--font-dorsa);
+  --font-fascinate: var(--font-fascinate);
+  --font-evening: "Evening", serif;
+
+  --color-base: #FFFFFF;
+  --color-primary: #2B2926;
+  --color-secondary: #2B2926;
+  --color-accent: #FFFFFF;
+
+  /* ── Site-wide palette ── */
+  --black: #080808;
+  --white: #fdfdfd;
+  --gold: #C9A96E;
+  /* Champagne gold — 10% accent */
+}
+
+body {
+  background-color: var(--color-base);
+  color: var(--color-secondary);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-primary);
+  font-family: var(--font-serif);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Glassmorphism — exact match to the scroll indicator in TunnelOverlay */
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50px;
+}

@@ -1,0 +1,44 @@
+/* HOME PAGE SPECIFIC STYLES */
+
+.hp-body {
+    background-color: #111111;
+}
+
+.hp-material-icon {
+    font-family: 'Material Symbols Outlined', sans-serif;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'liga';
+}
+
+@keyframes hero-float {
+    0%   { transform: translate(-50%, -50%) scale(1); }
+    50%  { transform: translate(-50%, -51.5%) scale(1.015); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.animate-hero-float {
+    animation: hero-float 18s ease-in-out infinite;
+}
+
+@keyframes grain-shift {
+    0%, 100% { transform: translate(0, 0); }
+    25%       { transform: translate(-1%, 1%); }
+    50%       { transform: translate(1%, -1%); }
+    75%       { transform: translate(-1%, -1%); }
+}
+
+.grain-overlay {
+    animation: grain-shift 0.5s steps(1) infinite;
+}

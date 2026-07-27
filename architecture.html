@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Architecture Documentation</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --text: #e0e0e0;
+            --primary: #d4af37;
+            --secondary: #2c2c2c;
+            --border: #333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: var(--primary);
+            font-weight: 300;
+        }
+        h1 {
+            font-size: 2.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 40px;
+        }
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 40px;
+        }
+        .folder {
+            background-color: var(--secondary);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        .folder h3 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .folder-path {
+            font-family: monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        .file-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .file-list li {
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+        .file-list li:last-child {
+            border-bottom: none;
+        }
+        .file-name {
+            font-family: monospace;
+            color: #fff;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 200px;
+        }
+        .description {
+            color: #aaa;
+            font-size: 0.95em;
+        }
+        .highlight {
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Project Architecture Documentation</h1>
+    <p>This document provides a comprehensive overview of how this Next.js web application operates. It breaks down the optimal folder structure we implemented, detailing what every folder and file is responsible for.</p>
+
+    <h2>1. Core Application Routing</h2>
+    <div class="folder">
+        <h3><span class="folder-path">src/app/</span></h3>
+        <p class="description">This is the heart of the Next.js App Router. It handles all page routing, global layouts, and server-side logic.</p>
+        <ul class="file-list">
+            <li><span class="file-name">layout.tsx</span> <span class="description">The root wrapper for the entire application. It imports global fonts, sets up HTML/Body tags, and wraps the app in global providers (like SmoothScroll and Navigation).</span></li>
+            <li><span class="file-name">page.tsx</span> <span class="description">The main landing page (Home). This file brings together various sections (Hero, Overview, Contact) to build the main view.</span></li>
+            <li><span class="file-name">globals.css / home.css</span> <span class="description">Global stylesheets containing fundamental CSS variables, Tailwind directives, and complex keyframe animations.</span></li>
+            <li><span class="file-name">api/</span> <span class="description">Directory for Next.js API Routes (serverless backend functions).</span></li>
+            <li><span class="file-name">about/, projects/, skills/</span> <span class="description">Directories representing the `/about`, `/projects`, and `/skills` routes respectively. Each contains its own `page.tsx`.</span></li>
+        </ul>
+    </div>
+
+    <h2>2. User Interface Components</h2>
+    <p>The <span class="highlight">src/components/</span> directory has been highly modularized to separate concerns, making the app scalable and maintainable.</p>
+
+    <div class="folder">
+        <h3><span class="folder-path">src/components/layout/</span></h3>
+        <p class="description">Structural components that define the global skeleton of the application.</p>
+        <ul class="file-list">
+            <li><span class="file-name">Navigation.tsx</span> <span class="description">The main pill-shaped navigation menu containing the theme toggle and routing links.</span></li>
+            <li><span class="file-name">TopBar.tsx</span> <span class="description">The top header bar (if used) spanning the top of the screen.</span></li>
+            <li><span class="file-name">Socials.tsx</span> <span class="description">Floating social media icons (GitHub, LinkedIn) typically anchored to the sides.</span></li>
+            <li><span class="file-name">Preloader.tsx</span> <span class="description">The initial loading screen that runs before the React tree fully mounts, managing the initial perceived performance.</span></li>
+        </ul>
+    </div>
+
+    <div class="folder">
+        <h3><span class="folder-path">src/components/sections/</span></h3>
+        <p class="description">Massive, logical content blocks that make up the structure of a page.</p>
+        <ul class="file-list">
+            <li><span class="file-name">Hero.tsx</span> <span class="description">The opening viewport of a page containing the main focal typography and imagery.</span></li>
+            <li><span class="file-name">Overview.tsx</span> <span class="description">A generalized section for text/introductory content.</span></li>
+            <li><span class="file-name">TechMatrix.tsx</span> <span class="description">A complex section displaying skills and technical capabilities.</span></li>
+            <li><span class="file-name">Contact.tsx</span> <span class="description">The footer section featuring email/social links and the final call-to-action.</span></li>
+            <li><span class="file-name">CaseStudySections.tsx</span> <span class="description">Deep-dive layouts for explaining individual project structures.</span></li>
+            <li><span class="file-name">StackedProjects.tsx</span> <span class="description">The luxury editorial layout showing project images and text split in a 55/45 grid.</span></li>
+        </ul>
+    </div>
+
+    <div class="folder">
+        <h3><span class="folder-path">src/components/visuals/</span></h3>
+        <p class="description">Highly complex graphical components, Canvas elements, and heavy animations.</p>
+        <ul class="file-list">
+            <li><span class="file-name">KineticTunnel.tsx</span> <span class="description">A dynamic, math-driven background visual effect.</span></li>
+            <li><span class="file-name">GithubGraph.tsx</span> <span class="description">A custom visualization rendering GitHub contribution activity.</span></li>
+            <li><span class="file-name">IconCloud.tsx</span> <span class="description">An interactive 3D sphere of floating technology icons.</span></li>
+            <li><span class="file-name">GoldenTrail.tsx</span> <span class="description">A mouse-following interaction effect.</span></li>
+            <li><span class="file-name">ScrollLogo.tsx</span> <span class="description">A logo that reacts and transforms based on scroll position.</span></li>
+            <li><span class="file-name">TunnelOverlay.tsx</span> <span class="description">An overlay specifically tailored for background interactions.</span></li>
+        </ul>
+    </div>
+
+    <div class="folder">
+        <h3><span class="folder-path">src/components/ui/</span></h3>
+        <p class="description">Small, reusable, independent utility components.</p>
+        <ul class="file-list">
+            <li><span class="file-name">CustomCursor.tsx</span> <span class="description">Overrides the default browser cursor with a custom React-tracked element.</span></li>
+            <li><span class="file-name">SmoothScroll.tsx</span> <span class="description">Implements Lenis or a similar library to hijack native scrolling for a buttery smooth experience.</span></li>
+            <li><span class="file-name">PageTransition.tsx</span> <span class="description">Framer Motion wrappers to animate routes in and out seamlessly.</span></li>
+            <li><span class="file-name">ScrollToTop.tsx</span> <span class="description">A utility button that returns the user to the top of the viewport.</span></li>
+            <li><span class="file-name">ScrambleText.tsx</span> <span class="description">A specialized text effect component (e.g., hacker/matrix decoding effect).</span></li>
+        </ul>
+    </div>
+
+    <h2>3. Application Logic & Utilities</h2>
+    <div class="folder">
+        <h3><span class="folder-path">src/hooks/</span> & <span class="folder-path">src/lib/</span></h3>
+        <p class="description">The brains and data layers of the application.</p>
+        <ul class="file-list">
+            <li><span class="file-name">src/hooks/useTheme.ts</span> <span class="description">A custom React Hook that manages state between Light and Dark mode, persisting user preference in localStorage.</span></li>
+            <li><span class="file-name">src/lib/stream-chat.ts</span> <span class="description">A utility file containing backend API clients, database connections, or 3rd-party integrations (like GetStream).</span></li>
+        </ul>
+    </div>
+
+    <h2>4. Root Configurations</h2>
+    <div class="folder">
+        <h3><span class="folder-path">Root Directory</span></h3>
+        <p class="description">Configuration files required by Node, Next.js, and Tailwind.</p>
+        <ul class="file-list">
+            <li><span class="file-name">package.json</span> <span class="description">Defines all the external libraries (dependencies) installed via npm and the build scripts.</span></li>
+            <li><span class="file-name">next.config.ts</span> <span class="description">Configuration specific to Next.js (e.g., Turbopack, image domains, redirects).</span></li>
+            <li><span class="file-name">tsconfig.json</span> <span class="description">Tells TypeScript how strictly to enforce typing across the project.</span></li>
+            <li><span class="file-name">eslint.config.mjs</span> <span class="description">Linter configuration to enforce code quality and formatting standards.</span></li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>

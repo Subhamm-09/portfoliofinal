@@ -153,12 +153,12 @@ export default function AboutEditorial() {
             onClick={handleEnterWithMusic}
           >
             <motion.h1 
-               className="font-serif text-3xl md:text-5xl italic font-light tracking-wider"
+               className="font-serif text-3xl md:text-5xl italic font-light tracking-wider text-center px-6"
                initial={{ opacity: 0, y: 10 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.4 }}
             >
-              Click anywhere to enter
+              Click anywhere to turn on your sound
             </motion.h1>
 
             <motion.button
@@ -243,27 +243,50 @@ export default function AboutEditorial() {
               </h1>
             </motion.div>
 
-            {/* Comical Dialogue Box (CTA) */}
+            {/* Comical Dialogue Box (CTA) - Highly Affordant & Clickable */}
             <motion.div 
-              className="absolute z-50 top-[-10%] md:top-[-5%] right-0 md:right-[5%] lg:right-[15%] cursor-pointer"
+              className="absolute z-50 top-[-14%] md:top-[-8%] right-0 md:right-[4%] lg:right-[12%] cursor-pointer group select-none"
               initial={{ opacity: 0, scale: 0, rotate: 20 }}
-              animate={hasEntered ? { opacity: 1, scale: 1, rotate: 6 } : { opacity: 0, scale: 0, rotate: 20 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15, delay: 1.8 }}
+              animate={hasEntered ? { 
+                opacity: 1, 
+                scale: 1, 
+                rotate: [4, 6, 4],
+                y: [0, -6, 0]
+              } : { opacity: 0, scale: 0, rotate: 20 }}
+              transition={{ 
+                y: { repeat: Infinity, duration: 3.2, ease: "easeInOut" },
+                rotate: { repeat: Infinity, duration: 4.5, ease: "easeInOut" },
+                opacity: { duration: 0.6, delay: 1.8 },
+                scale: { type: "spring", stiffness: 220, damping: 14, delay: 1.8 }
+              }}
               onClick={() => setIsArchiveOpen(true)}
-              whileHover={{ scale: 1.1, rotate: 0 }}
+              whileHover={{ scale: 1.08, rotate: 0 }}
+              whileTap={{ scale: 0.95 }}
             >
               <div 
-                className={`relative px-5 py-3 md:px-8 md:py-4 border-2 md:border-[3px] rounded-[2rem] rounded-bl-sm transition-colors duration-500 ${
+                className={`relative px-5 py-3 md:px-7 md:py-4 border-2 md:border-[3px] rounded-[1.75rem] rounded-bl-sm transition-all duration-200 overflow-hidden ${
                   isDark 
-                    ? "bg-[#0A0A0A] border-[#EAE7DF] shadow-[4px_4px_0_0_rgba(234,231,223,1)]" 
-                    : "bg-white border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)]"
+                    ? "bg-[#0A0A0A] border-[#EAE7DF] shadow-[4px_4px_0_0_#EAE7DF] group-hover:shadow-[6px_6px_0_0_#EAE7DF] group-active:shadow-[1px_1px_0_0_#EAE7DF] group-active:translate-x-[3px] group-active:translate-y-[3px]" 
+                    : "bg-white border-black shadow-[4px_4px_0_0_#000] group-hover:shadow-[6px_6px_0_0_#000] group-active:shadow-[1px_1px_0_0_#000] group-active:translate-x-[3px] group-active:translate-y-[3px]"
                 }`}
               >
+                {/* Light Glint / Shimmer */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
+
+                {/* Primary Button Title */}
                 <p 
-                  className="font-sans font-black italic text-xs md:text-base tracking-[0.2em] uppercase whitespace-nowrap"
+                  className="font-sans font-black italic text-xs md:text-base tracking-[0.2em] uppercase whitespace-nowrap text-center"
                   style={{ color: isDark ? "#EAE7DF" : "#000000" }}
                 >
                   ENTER DIMENSION!
+                </p>
+
+                {/* Clear Action Monospace Subtitle */}
+                <p 
+                  className="font-mono text-[8px] md:text-[9px] tracking-[0.25em] uppercase mt-1 text-center opacity-60 font-semibold"
+                  style={{ color: isDark ? "#EAE7DF" : "#000000" }}
+                >
+                  [ CLICK TO EXPLORE ]
                 </p>
               </div>
             </motion.div>

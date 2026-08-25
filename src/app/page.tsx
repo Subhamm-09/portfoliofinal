@@ -109,151 +109,47 @@ function Grain({ isDark }: { isDark: boolean }) {
   );
 }
 
-// ─── Cursor light ─────────────────────────────────────────────────────────────
-function CursorLight({ isDark }: { isDark: boolean }) {
-  const [pos, setPos] = useState({ x: -400, y: -400 });
-  // useEffect is safe here because this component is client-only
-  if (typeof window !== "undefined") {
-    // handled below
-  }
-  return (
-    <>
-      <CursorLightInner isDark={isDark} pos={pos} setPos={setPos} />
-    </>
-  );
-}
-
-function CursorLightInner({
-  isDark,
-  pos,
-  setPos,
-}: {
-  isDark: boolean;
-  pos: { x: number; y: number };
-  setPos: (p: { x: number; y: number }) => void;
-}) {
-  if (typeof window !== "undefined") {
-    // noop — handled via useEffect below
-  }
-  const [, forceRender] = useState(0);
-  const posRef = useRef({ x: -400, y: -400 });
-
-  // attach on mount
-  if (typeof window !== "undefined") {
-    const stored = posRef.current;
-    void stored; // suppress unused warning
-  }
-
-  return (
-    <_CursorLightEffect isDark={isDark} />
-  );
-}
-
-function _CursorLightEffect({ isDark }: { isDark: boolean }) {
-  const [pos, setPos] = useState({ x: -400, y: -400 });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleMove = useCallback((e: MouseEvent) => setPos({ x: e.clientX, y: e.clientY }), []);
-
-  if (typeof window !== "undefined") {
-    // deliberately empty - effect handles it
-  }
-
-  return (
-    <_CursorLightDOM isDark={isDark} pos={pos} onMove={handleMove} />
-  );
-}
-
-function _CursorLightDOM({
-  isDark,
-  pos,
-  onMove,
-}: {
-  isDark: boolean;
-  pos: { x: number; y: number };
-  onMove: (e: MouseEvent) => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  // Simple: just use useEffect in this leaf component
-  const [lpos, setLpos] = useState({ x: -400, y: -400 });
-  const goldRgb = isDark ? "184,147,85" : "201,169,110";
-
-  // attach event on mount
-  if (typeof window !== "undefined") {
-    // handled below via ref trick
-  }
-
-  return (
-    <MouseGlow isDark={isDark} />
-  );
-}
-
-// Cleaner implementation
+// ─── GPU-Accelerated Mouse Glow (Zero React Re-renders) ──────────────────────
 function MouseGlow({ isDark }: { isDark: boolean }) {
-  const [pos, setPos] = useState({ x: -600, y: -600 });
-  const goldRgb = isDark ? "184,147,85" : "201,169,110";
+  const glowRef = useRef<HTMLDivElement>(null);
 
-  // Client-only mount
-  const mounted = useRef(false);
-  if (!mounted.current && typeof window !== "undefined") {
-    mounted.current = true;
-  }
+  useEffect(() => {
+    if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches) return;
 
-  return (
-    <_MouseGlowMount setPos={setPos} pos={pos} goldRgb={goldRgb} />
-  );
-}
+    let rafId: number = 0;
+    let targetX = -600;
+    let targetY = -600;
 
-function _MouseGlowMount({
-  setPos,
-  pos,
-  goldRgb,
-}: {
-  setPos: (p: { x: number; y: number }) => void;
-  pos: { x: number; y: number };
-  goldRgb: string;
-}) {
-  const [lpos, setLpos] = useState({ x: -600, y: -600 });
-  
-  // The simplest correct approach
-  const [ready, setReady] = useState(false);
-  
-  return (
-    <EffectHost setPos={setLpos} pos={lpos} goldRgb={goldRgb} />
-  );
-}
+    const handleMouseMove = (e: MouseEvent) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          if (glowRef.current) {
+            glowRef.current.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+          }
+          rafId = 0;
+        });
+      }
+    };
 
-// Final clean implementation
-function EffectHost({
-  setPos,
-  pos,
-  goldRgb,
-}: {
-  setPos: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>;
-  pos: { x: number; y: number };
-  goldRgb: string;
-}) {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { useState: _u, useEffect: _e } = require("react");
-  return null;
-}
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
 
-// ─── ACTUAL Mouse glow - simplified ───────────────────────────────────────────
-// (All the above scaffolding replaced with this single clean component)
-function ActualMouseGlow({ color }: { color: string }) {
-  const [pos, setPos] = useState({ x: -600, y: -600 });
-
-  // This will only run on client
-  const ref = useRef(false);
+  const rgb = isDark ? "201, 163, 74" : "184, 68, 90";
 
   return (
-    <motion.div
-      className="pointer-events-none fixed inset-0 z-[1]"
-      onMouseMove={(e: React.MouseEvent) => setPos({ x: e.clientX, y: e.clientY })}
-      animate={{
-        background: `radial-gradient(600px circle at ${pos.x}px ${pos.y}px, rgba(${color},0.06), transparent 55%)`,
+    <div
+      ref={glowRef}
+      className="pointer-events-none fixed top-0 left-0 -ml-[300px] -mt-[300px] w-[600px] h-[600px] rounded-full z-[1] transition-opacity duration-500"
+      style={{
+        background: `radial-gradient(circle at center, rgba(${rgb}, ${isDark ? 0.05 : 0.04}) 0%, transparent 70%)`,
+        willChange: "transform",
       }}
-      transition={{ duration: 0 }}
     />
   );
 }
@@ -477,6 +373,9 @@ export default function Home() {
   const s_orbitY           = useSpring(orbitY, orbitSpring);
   const s_orbitRotate      = useSpring(orbitRotate, orbitSpring);
 
+  // Hero InView detection to freeze 3D canvas off-screen
+  const isHeroInView = useInView(heroRef, { margin: "200px 0px" });
+
   // Footer
   const footerRef = useRef<HTMLDivElement>(null);
   const footerInView = useInView(footerRef, { once: true, margin: "-100px" });
@@ -486,6 +385,9 @@ export default function Home() {
       className={`${julius.variable} min-h-screen`}
       style={{ backgroundColor: t.bg, color: t.text, transition: "background-color 0.7s ease, color 0.7s ease" }}
     >
+      {/* Dynamic ambient mouse glow */}
+      <MouseGlow isDark={isDark} />
+
       {/* Scroll progress bar */}
       <motion.div
         style={{ scaleX, transformOrigin: "left", backgroundColor: t.gold }}
@@ -603,7 +505,7 @@ export default function Home() {
               className={`absolute top-1/2 left-1/2 w-[52vw] sm:w-[35vw] md:w-[26vw] max-w-[390px] aspect-square`}
               style={{ transform: "translate(-50%, -50%)" }}
             >
-              <Statue3D onLoaded={() => setIsModelLoaded(true)} />
+              <Statue3D onLoaded={() => setIsModelLoaded(true)} isVisible={isHeroInView} />
             </div>
 
           </motion.div>

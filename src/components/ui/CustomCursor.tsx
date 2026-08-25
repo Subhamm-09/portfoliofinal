@@ -1,76 +1,98 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 
 export default function CustomCursor() {
-  const [mousePosition, setMousePosition] = useState({ x: -100, y: -100 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [cursorVariant, setCursorVariant] = useState<"default" | "project">("default");
+  const cursorX = useMotionValue(-100);
+  const cursorY = useMotionValue(-100);
+
+  const springConfig = { stiffness: 800, damping: 40, mass: 0.5 };
+  const smoothX = useSpring(cursorX, springConfig);
+  const smoothY = useSpring(cursorY, springConfig);
+
+  const [cursorState, setCursorState] = useState<{
+    variant: "default" | "project";
+    isHovering: boolean;
+    isVisible: boolean;
+  }>({
+    variant: "default",
+    isHovering: false,
+    isVisible: false,
+  });
 
   useEffect(() => {
-    if (window.matchMedia("(pointer: coarse)").matches) return;
+    // Disable on touch / coarse pointer devices
+    if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches) return;
 
-    const updateMousePosition = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-      if (!isVisible) setIsVisible(true);
+    const handleMouseMove = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+      setCursorState((prev) => {
+        if (!prev.isVisible) return { ...prev, isVisible: true };
+        return prev;
+      });
     };
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      
+      if (!target) return;
+
       const isProject = target.closest("[data-cursor='project']");
       if (isProject) {
-        setCursorVariant("project");
-        setIsHovering(false);
+        setCursorState((prev) => ({ ...prev, variant: "project", isHovering: false }));
         return;
       }
-      
-      setCursorVariant("default");
+
       const isInteractive = target.closest("a, button, input, [role='button']");
-      setIsHovering(!!isInteractive);
+      setCursorState((prev) => ({
+        ...prev,
+        variant: "default",
+        isHovering: !!isInteractive,
+      }));
     };
 
     const handleMouseOut = () => {
-      setIsHovering(false);
-      setCursorVariant("default");
+      setCursorState((prev) => ({ ...prev, variant: "default", isHovering: false }));
     };
 
-    window.addEventListener("mousemove", updateMousePosition);
-    window.addEventListener("mouseover", handleMouseOver);
-    window.addEventListener("mouseout", handleMouseOut);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("mouseover", handleMouseOver, { passive: true });
+    window.addEventListener("mouseout", handleMouseOut, { passive: true });
 
     return () => {
-      window.removeEventListener("mousemove", updateMousePosition);
+      window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseover", handleMouseOver);
       window.removeEventListener("mouseout", handleMouseOut);
     };
-  }, [isVisible]);
+  }, [cursorX, cursorY]);
 
-  if (!isVisible) return null;
+  if (!cursorState.isVisible) return null;
 
-  const isProject = cursorVariant === "project";
-  const size = isProject ? 80 : (isHovering ? 48 : 12);
-  const offset = size / 2;
+  const isProject = cursorState.variant === "project";
+  const size = isProject ? 80 : (cursorState.isHovering ? 48 : 12);
 
   return (
     <motion.div
       className="fixed top-0 left-0 z-[99999] pointer-events-none rounded-full mix-blend-difference"
+      style={{
+        x: smoothX,
+        y: smoothY,
+        translateX: "-50%",
+        translateY: "-50%",
+        willChange: "transform, width, height",
+      }}
       animate={{
-        x: mousePosition.x - offset,
-        y: mousePosition.y - offset,
         width: size,
         height: size,
         backgroundColor: isProject ? "transparent" : "#ffffff",
         border: isProject ? "1px solid #C9A96E" : "0px solid transparent",
-        opacity: isHovering ? 0.6 : (isProject ? 1 : 1),
+        opacity: cursorState.isHovering ? 0.6 : 1,
       }}
       transition={{
-        type: "spring",
-        stiffness: 800,
-        damping: 40,
-        mass: 0.5,
+        width: { duration: 0.2 },
+        height: { duration: 0.2 },
+        opacity: { duration: 0.2 },
       }}
     />
   );

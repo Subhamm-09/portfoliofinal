@@ -38,11 +38,13 @@ export default function Contact() {
     const clipPath = useMotionTemplate`circle(${maskRadius}px at ${mouseX}px ${mouseY}px)`;
 
     useEffect(() => {
+        if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches) return;
+
         const handleMouseMove = (e: MouseEvent) => {
             mouseX.set(e.clientX);
             mouseY.set(e.clientY);
         };
-        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mousemove", handleMouseMove, { passive: true });
         return () => window.removeEventListener("mousemove", handleMouseMove);
     }, [mouseX, mouseY]);
 

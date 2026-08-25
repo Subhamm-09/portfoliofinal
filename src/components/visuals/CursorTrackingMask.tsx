@@ -31,8 +31,11 @@ export default function CursorTrackingMask({ className = "", isDark = false }: C
 
   useEffect(() => {
     prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isCoarse = window.matchMedia('(pointer: coarse)').matches;
 
-    if (prefersReducedMotion.current) return;
+    if (prefersReducedMotion.current || isCoarse) return;
+
+    let isVisible = true;
 
     const handlePointerMove = (e: PointerEvent | MouseEvent) => {
       if (!containerRef.current) return;
@@ -59,7 +62,7 @@ export default function CursorTrackingMask({ className = "", isDark = false }: C
       const dyRight = e.clientY - rightEyeCenterY;
       const distRight = Math.sqrt(dxRight * dxRight + dyRight * dyRight);
 
-      // Normalize and scale by max movement (with a tiny deadzone if cursor is perfectly on center)
+      // Normalize and scale by max movement
       if (distLeft > 0) {
         target.current.leftX = (dxLeft / distLeft) * Math.min(distLeft * 0.05, MAX_PUPIL_MOVEMENT);
         target.current.leftY = (dyLeft / distLeft) * Math.min(distLeft * 0.05, MAX_PUPIL_MOVEMENT);
@@ -71,22 +74,35 @@ export default function CursorTrackingMask({ className = "", isDark = false }: C
       }
     };
 
-    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      { threshold: 0.1 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
 
     const animate = () => {
-      // Lerp current towards target
-      current.current.leftX += (target.current.leftX - current.current.leftX) * SMOOTHING;
-      current.current.leftY += (target.current.leftY - current.current.leftY) * SMOOTHING;
-      
-      current.current.rightX += (target.current.rightX - current.current.rightX) * SMOOTHING;
-      current.current.rightY += (target.current.rightY - current.current.rightY) * SMOOTHING;
+      if (isVisible) {
+        // Lerp current towards target
+        current.current.leftX += (target.current.leftX - current.current.leftX) * SMOOTHING;
+        current.current.leftY += (target.current.leftY - current.current.leftY) * SMOOTHING;
+        
+        current.current.rightX += (target.current.rightX - current.current.rightX) * SMOOTHING;
+        current.current.rightY += (target.current.rightY - current.current.rightY) * SMOOTHING;
 
-      if (leftPupilRef.current) {
-        leftPupilRef.current.style.transform = `translate(-50%, -50%) translate(${current.current.leftX}px, ${current.current.leftY}px)`;
-      }
-      
-      if (rightPupilRef.current) {
-        rightPupilRef.current.style.transform = `translate(-50%, -50%) translate(${current.current.rightX}px, ${current.current.rightY}px)`;
+        if (leftPupilRef.current) {
+          leftPupilRef.current.style.transform = `translate3d(${current.current.leftX}px, ${current.current.leftY}px, 0) translate(-50%, -50%)`;
+        }
+        
+        if (rightPupilRef.current) {
+          rightPupilRef.current.style.transform = `translate3d(${current.current.rightX}px, ${current.current.rightY}px, 0) translate(-50%, -50%)`;
+        }
       }
 
       requestRef.current = requestAnimationFrame(animate);
@@ -96,6 +112,7 @@ export default function CursorTrackingMask({ className = "", isDark = false }: C
 
     return () => {
       window.removeEventListener('pointermove', handlePointerMove);
+      observer.disconnect();
       cancelAnimationFrame(requestRef.current);
     };
   }, []);

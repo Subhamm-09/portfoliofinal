@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 // Icons
@@ -123,21 +123,44 @@ const DEVELOPER_TOOLS = [
 // --- Sub-components ---
 
 const MouseGlow = ({ isDark }: { isDark: boolean }) => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const glowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches) return;
+
+    let rafId: number = 0;
+    let targetX = -600;
+    let targetY = -600;
+
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
+      targetX = e.clientX;
+      targetY = e.clientY;
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          if (glowRef.current) {
+            glowRef.current.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+          }
+          rafId = 0;
+        });
+      }
     };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
+  const rgb = isDark ? "212, 175, 55" : "184, 68, 90";
+
   return (
-    <motion.div
-      className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-300"
-      animate={{
-        background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, ${isDark ? "rgba(212, 175, 55, 0.03)" : "rgba(184, 68, 90, 0.03)"}, transparent 40%)`,
+    <div
+      ref={glowRef}
+      className="pointer-events-none fixed top-0 left-0 -ml-[300px] -mt-[300px] w-[600px] h-[600px] rounded-full z-0 transition-opacity duration-500"
+      style={{
+        background: `radial-gradient(circle at center, rgba(${rgb}, 0.035) 0%, transparent 60%)`,
+        willChange: "transform",
       }}
     />
   );

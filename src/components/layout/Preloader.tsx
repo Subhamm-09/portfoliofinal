@@ -17,11 +17,19 @@ export default function Preloader({ onComplete, isReady = true }: PreloaderProps
     const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
     useEffect(() => {
-        // Simple synthetic delay to ensure a minimum screen time of 2.2s
+        // Fast elegant delay so the logo is crisp
         const timer = setTimeout(() => {
             setMinTimeElapsed(true);
-        }, 2200);
+        }, 600);
         return () => clearTimeout(timer);
+    }, []);
+
+    // Fallback timer: never keep user waiting more than 1.2s total
+    useEffect(() => {
+        const fallbackTimer = setTimeout(() => {
+            setLifting(true);
+        }, 1200);
+        return () => clearTimeout(fallbackTimer);
     }, []);
 
     useEffect(() => {
@@ -47,7 +55,7 @@ export default function Preloader({ onComplete, isReady = true }: PreloaderProps
                     animate={lifting ? { opacity: 0 } : { opacity: 1 }}
                     transition={
                         lifting
-                            ? { duration: 1.2, ease: power4In, delay: 0.3 } // Wait for text to fade first
+                            ? { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
                             : { duration: 0 }
                     }
                     onAnimationComplete={lifting ? handleLiftComplete : undefined}

@@ -2,8 +2,8 @@
 
 import React, { useRef, useMemo } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { Center, Bounds, Html, ContactShadows } from "@react-three/drei";
-import { OBJLoader } from "three-stdlib";
+import { Center, Bounds } from "@react-three/drei";
+import { GLTFLoader } from "three-stdlib";
 import * as THREE from "three";
 
 import { useTheme } from "@/hooks/useTheme";
@@ -11,16 +11,15 @@ import { useTheme } from "@/hooks/useTheme";
 function StatueModel() {
   const { isDark } = useTheme();
   
-  const objDark = useLoader(OBJLoader, "/Meshy_AI_Fragmented_Apollo_0816202446_texture.obj");
-  const objLight = useLoader(OBJLoader, "/Meshy_AI_Fragmented_Apollo_0816230746_texture.obj");
-  const textureDark = useLoader(THREE.TextureLoader, "/Meshy_AI_Fragmented_Apollo_0816202446_texture.png");
-  const textureLight = useLoader(THREE.TextureLoader, "/Meshy_AI_Fragmented_Apollo_0816230746_texture.png");
+  const gltfDark = useLoader(GLTFLoader, "/apollo_dark.glb");
+  const gltfLight = useLoader(GLTFLoader, "/apollo_light.glb");
+  const textureDark = useLoader(THREE.TextureLoader, "/apollo_dark_tex.jpg");
+  const textureLight = useLoader(THREE.TextureLoader, "/apollo_light_tex.jpg");
   
   const darkGroupRef = useRef<THREE.Group>(null);
   const lightGroupRef = useRef<THREE.Group>(null);
 
   // Create a clipping plane that points UP (keeps everything above it).
-  // The constant controls the height of the cutoff in world space.
   const clipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0.95), []);
 
   // High-quality PBR material using the native texture for dark mode
@@ -28,10 +27,10 @@ function StatueModel() {
     () =>
       new THREE.MeshStandardMaterial({
         map: textureDark,
-        roughness: 0.3, // slight matte for dark mode
-        metalness: 0.6, // slightly less plastic/glossy
+        roughness: 0.3,
+        metalness: 0.6,
         transparent: true,
-        opacity: 0, // start hidden to avoid flash
+        opacity: 0,
         clippingPlanes: [clipPlane],
       }),
     [textureDark, clipPlane]
@@ -42,7 +41,7 @@ function StatueModel() {
     () =>
       new THREE.MeshStandardMaterial({
         map: textureLight,
-        roughness: 0.88, // authentic dry plaster — almost no specular
+        roughness: 0.88,
         metalness: 0.0,
         transparent: true,
         opacity: 0,
@@ -51,8 +50,8 @@ function StatueModel() {
     [textureLight, clipPlane]
   );
 
-  const clonedDark = useMemo(() => objDark.clone(), [objDark]);
-  const clonedLight = useMemo(() => objLight.clone(), [objLight]);
+  const clonedDark = useMemo(() => gltfDark.scene.clone(), [gltfDark]);
+  const clonedLight = useMemo(() => gltfLight.scene.clone(), [gltfLight]);
 
   React.useLayoutEffect(() => {
     clonedDark.traverse((child) => {

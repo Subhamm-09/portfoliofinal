@@ -1,22 +1,27 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
 
 const NAV_ITEMS = [
-    { name: "Home", href: "/" },
-    { name: "Projects", href: "/projects" },
-    { name: "Skills", href: "/skills" },
-    { name: "About", href: "/about" },
-    { name: "Resume", href: "/resume.pdf" },
+    { name: "HOME", href: "/" },
+    { name: "WORK", href: "/projects" },
+    { name: "SKILLS", href: "/skills" },
+    { name: "ABOUT", href: "/about" },
+    { name: "RESUME", href: "/Subham_Resume_Updated.docx" },
 ];
 
 export default function Navigation() {
     const pathname = usePathname();
     const [activeItem, setActiveItem] = useState("");
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { isDark, toggle } = useTheme();
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    const isGoldNav = pathname === "/projects" || pathname === "/skills" || pathname === "/projects/" || pathname === "/skills/";
 
     useEffect(() => {
         setActiveItem(pathname);
@@ -24,7 +29,28 @@ export default function Navigation() {
         return () => window.removeEventListener("hashchange", () => setActiveItem(pathname));
     }, [pathname]);
 
+    // Close mobile menu on route change
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [pathname]);
+
+    // Close on click outside
+    useEffect(() => {
+        const handleOutsideClick = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setIsMobileMenuOpen(false);
+            }
+        };
+        if (isMobileMenuOpen) {
+            document.addEventListener("mousedown", handleOutsideClick);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleOutsideClick);
+        };
+    }, [isMobileMenuOpen]);
+
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        setIsMobileMenuOpen(false);
         if (href === "/" && pathname === "/") {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -32,173 +58,353 @@ export default function Navigation() {
         }
     };
 
+    const accentColor = isDark ? "#C9A96E" : "#B8445A";
+
     return (
         <>
             <style>{`
-                .pill-nav {
+                .editorial-header {
                     position: fixed;
-                    top: 1.75rem;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    padding: 0.4rem 1.5rem;
-                    border-radius: 100px;
+                    top: 0;
+                    left: 0;
+                    right: 0;
                     z-index: 9999;
+                    pointer-events: none;
+                }
+
+                .nav-container {
+                    max-width: 1400px;
+                    margin: 0 auto;
+                    padding: 1.5rem 1.25rem;
                     display: flex;
                     align-items: center;
-                    gap: 2.5rem;
-                    animation: pill-nav-in 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
-                    transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+                    justify-content: space-between;
+                    animation: nav-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
                 }
 
-                .pill-nav.dark {
-                    background: rgba(12, 12, 12, 0.95);
-                    border: 1px solid rgba(255, 255, 255, 0.15);
-                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-                    backdrop-filter: blur(20px);
-                    -webkit-backdrop-filter: blur(20px);
+                @media (min-width: 768px) {
+                    .nav-container { padding: 3rem 3rem; }
                 }
 
-                .pill-nav.light {
-                    background: rgba(255, 255, 255, 0.95);
-                    border: 1px solid rgba(201, 169, 110, 0.4);
-                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-                    backdrop-filter: blur(20px);
-                    -webkit-backdrop-filter: blur(20px);
+                @media (min-width: 1024px) {
+                    .nav-container { padding: 3rem 6rem; }
                 }
 
-                @keyframes pill-nav-in {
-                    from { opacity: 0; transform: translateX(-50%) translateY(-14px); }
-                    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+                @keyframes nav-in {
+                    from { opacity: 0; transform: translateY(-8px); }
+                    to   { opacity: 1; transform: translateY(0); }
                 }
 
-                .pill-nav ul {
+                .brand-logo {
+                    font-family: var(--font-cormorant, 'Cormorant Garamond', serif);
+                    font-size: 1.15rem;
+                    letter-spacing: 0.25em;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                    text-decoration: none;
+                    transition: opacity 0.5s ease;
+                    pointer-events: auto;
+                }
+
+                @media (min-width: 768px) {
+                    .brand-logo { font-size: 1.25rem; letter-spacing: 0.3em; }
+                }
+
+                @media (min-width: 1024px) {
+                    .brand-logo { font-size: 1.4rem; }
+                }
+
+                .editorial-header.dark .brand-logo { color: #E7E2D8; }
+                .editorial-header.light .brand-logo { color: #1A1A1A; }
+
+                .nav-group {
                     display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    pointer-events: auto;
+                }
+
+                @media (min-width: 768px) {
+                    .nav-group { gap: 2.5rem; }
+                }
+
+                @media (min-width: 1024px) {
+                    .nav-group { gap: 4rem; }
+                }
+
+                /* Desktop Nav Links */
+                .desktop-nav-links {
+                    display: none;
                     list-style: none;
-                    gap: 2.5rem;
+                    gap: 1.5rem;
                     margin: 0;
                     padding: 0;
                 }
 
-                .pill-nav a {
+                @media (min-width: 768px) {
+                    .desktop-nav-links { display: flex; }
+                }
+
+                @media (min-width: 1024px) {
+                    .desktop-nav-links { gap: 3rem; }
+                }
+
+                .desktop-nav-links a {
+                    position: relative;
                     text-decoration: none;
                     font-family: var(--font-inter, 'Inter', sans-serif);
-                    font-size: 0.7rem;
-                    text-transform: uppercase;
-                    letter-spacing: 0.12em;
+                    font-size: 0.65rem;
+                    letter-spacing: 0.15em;
                     font-weight: 500;
-                    position: relative;
-                    padding-bottom: 3px;
-                    transition: color 0.4s ease;
+                    display: flex;
+                    gap: 0.5rem;
+                    align-items: baseline;
+                    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                    opacity: 0.7;
                 }
 
-                .pill-nav.dark a { color: rgba(245, 243, 239, 0.85); }
-                .pill-nav.light a { color: rgba(10, 10, 10, 0.85); }
-
-                .pill-nav a::after {
+                .desktop-nav-links a::after {
                     content: '';
                     position: absolute;
-                    bottom: 0;
+                    bottom: -4px;
                     left: 0;
-                    width: 0%;
+                    width: 100%;
                     height: 1px;
-                    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                    background-color: currentColor;
+                    transform: scaleX(0);
+                    transform-origin: right;
+                    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
                 }
 
-                .pill-nav.dark a::after  { background: #B89355; }
-                .pill-nav.light a::after { background: #C9A96E; }
+                .editorial-header.dark .desktop-nav-links a { color: #E7E2D8; }
+                .editorial-header.light .desktop-nav-links a { color: #1A1A1A; }
 
-                .pill-nav a:hover::after,
-                .pill-nav a.pill-active::after { width: 100%; }
+                .editorial-header.dark .desktop-nav-links a:hover, 
+                .editorial-header.dark .desktop-nav-links a.pill-active { 
+                    opacity: 1; 
+                    transform: translateY(-1px);
+                    letter-spacing: 0.18em;
+                }
+                
+                .editorial-header.light .desktop-nav-links a:hover,
+                .editorial-header.light .desktop-nav-links a.pill-active { 
+                    opacity: 1;
+                    color: #B8445A !important;
+                    transform: translateY(-1px);
+                    letter-spacing: 0.18em;
+                }
 
-                .pill-nav.dark a.pill-active,
-                .pill-nav.dark a:hover { color: rgba(245, 243, 239, 0.95); }
+                .desktop-nav-links a:hover::after, .desktop-nav-links a.pill-active::after {
+                    transform: scaleX(1);
+                    transform-origin: left;
+                }
 
-                .pill-nav.light a.pill-active,
-                .pill-nav.light a:hover { color: rgba(10, 10, 10, 0.9); }
+                .editorial-header.light .desktop-nav-links a::after {
+                    background-color: #B8445A;
+                }
 
-                .theme-toggle {
-                    background: none;
-                    border: none;
+                /* Theme Toggle Pill Button */
+                .theme-toggle-btn {
+                    position: relative;
+                    background: ${isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.05)"};
+                    border: 1px solid ${isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.1)"};
                     cursor: pointer;
-                    padding: 0;
                     display: flex;
                     align-items: center;
                     gap: 0.4rem;
-                    transition: all 0.4s ease;
+                    padding: 0.45rem 0.85rem;
+                    border-radius: 9999px;
+                    transition: all 0.3s ease;
                     flex-shrink: 0;
-                    font-size: 0.55rem;
+                    font-size: 0.6rem;
                     text-transform: uppercase;
-                    letter-spacing: 0.25em;
-                    font-weight: 500;
+                    letter-spacing: 0.2em;
+                    font-weight: 600;
+                    backdrop-filter: blur(12px);
+                    pointer-events: auto;
                 }
 
-                .pill-nav.dark .theme-toggle { color: #C99F55; }
-                .pill-nav.light .theme-toggle { color: #D4AF37; }
-
-                .pill-nav.dark .theme-toggle:hover { color: #e6b865; text-shadow: 0 0 12px rgba(201,159,85,0.5); }
-                .pill-nav.light .theme-toggle:hover { color: #e6b865; text-shadow: 0 0 12px rgba(212,175,55,0.5); }
-
-                .pill-nav .divider {
-                    width: 1px;
-                    height: 14px;
-                    flex-shrink: 0;
-                    transition: background 0.5s ease;
+                .editorial-header.dark .theme-toggle-btn {
+                    color: #E7E2D8;
+                }
+                .editorial-header.dark .theme-toggle-btn:hover {
+                    border-color: #C9A96E;
+                    color: #C9A96E;
                 }
 
-                .pill-nav.dark .divider  { background: rgba(255,255,255,0.1); }
-                .pill-nav.light .divider { background: rgba(0,0,0,0.1); }
+                .editorial-header.light .theme-toggle-btn {
+                    color: #1A1A1A;
+                }
+                .editorial-header.light .theme-toggle-btn:hover {
+                    border-color: #B8445A;
+                    color: #B8445A;
+                }
+
+                /* Mobile Menu Dropdown Toggle Pill */
+                .mobile-menu-toggle {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.45rem;
+                    padding: 0.45rem 0.9rem;
+                    border-radius: 9999px;
+                    font-size: 0.6rem;
+                    letter-spacing: 0.2em;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    background: ${isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.05)"};
+                    border: 1px solid ${isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.1)"};
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    backdrop-filter: blur(12px);
+                    pointer-events: auto;
+                }
+
+                @media (min-width: 768px) {
+                    .mobile-menu-toggle { display: none; }
+                }
+
+                .editorial-header.dark .mobile-menu-toggle {
+                    color: #E7E2D8;
+                }
+                .editorial-header.light .mobile-menu-toggle {
+                    color: #1A1A1A;
+                }
+
+                .mobile-menu-toggle:hover {
+                    border-color: ${accentColor};
+                    color: ${accentColor};
+                }
+
+                /* Dynamic Gold Override */
+                .editorial-header.gold .brand-logo { color: #C9A34A !important; }
+                .editorial-header.gold .desktop-nav-links a { color: #C9A34A !important; }
+                .editorial-header.gold .desktop-nav-links a::after { background-color: #C9A34A !important; }
             `}</style>
 
-            <nav className={`pill-nav ${isDark ? "dark" : "light"}`} suppressHydrationWarning>
-                <ul>
-                    {NAV_ITEMS.map((item) => (
-                        <li key={item.href}>
-                            <Link
-                                href={item.href}
-                                onClick={(e) => handleClick(e, item.href)}
-                                className={activeItem === item.href ? "pill-active" : ""}
-                            >
-                                {item.name}
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
+            <header className={`editorial-header ${isDark ? "dark" : "light"} ${isGoldNav ? "gold" : ""}`} suppressHydrationWarning>
+                <div className="nav-container">
+                    {/* BRAND LOGO */}
+                    <Link href="/" className="brand-logo">
+                        Subham Panda
+                    </Link>
 
-                <div className="divider" />
+                    {/* NAVIGATION & ACTION CONTROLS */}
+                    <div className="nav-group" ref={menuRef}>
+                        {/* Desktop Links (Hidden on Mobile) */}
+                        <ul className="desktop-nav-links">
+                            {NAV_ITEMS.map((item) => (
+                                <li key={item.href}>
+                                    {item.name === "RESUME" ? (
+                                        <a
+                                            href={item.href}
+                                            download="Subham_Resume_Updated.docx"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <span>{item.name}</span>
+                                        </a>
+                                    ) : (
+                                        <Link
+                                            href={item.href}
+                                            onClick={(e) => handleClick(e, item.href)}
+                                            className={activeItem === item.href ? "pill-active" : ""}
+                                        >
+                                            <span>{item.name}</span>
+                                        </Link>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
 
-                <button
-                    className="theme-toggle"
-                    onClick={toggle}
-                    aria-label="Toggle theme"
-                    suppressHydrationWarning
-                >
-                    {isDark ? (
-                        <>
-                            {/* Sun icon (click to go light) */}
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="5"/>
-                                <line x1="12" y1="1" x2="12" y2="3"/>
-                                <line x1="12" y1="21" x2="12" y2="23"/>
-                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                                <line x1="1" y1="12" x2="3" y2="12"/>
-                                <line x1="21" y1="12" x2="23" y2="12"/>
-                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                            </svg>
-                            <span>Light</span>
-                        </>
-                    ) : (
-                        <>
-                            {/* Moon icon (click to go dark) */}
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-                            </svg>
-                            <span>Dark</span>
-                        </>
-                    )}
-                </button>
-            </nav>
+                        {/* Separate Light / Dark Mode Toggle Button */}
+                        <button
+                            className="theme-toggle-btn"
+                            onClick={toggle}
+                            aria-label="Toggle light/dark theme"
+                            suppressHydrationWarning
+                        >
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
+                            <span>{isDark ? "LIGHT" : "DARK"}</span>
+                        </button>
+
+                        {/* Mobile Menu Dropdown Button */}
+                        <button
+                            className="mobile-menu-toggle"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Toggle navigation dropdown menu"
+                        >
+                            <span>{isMobileMenuOpen ? "CLOSE" : "MENU"}</span>
+                            <span className="text-[9px] transition-transform duration-300" style={{ transform: isMobileMenuOpen ? "rotate(180deg)" : "none" }}>
+                                ▼
+                            </span>
+                        </button>
+
+                        {/* Floating Mobile Dropdown Menu */}
+                        <AnimatePresence>
+                            {isMobileMenuOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                                    className="absolute top-[calc(100%+0.5rem)] right-4 w-60 rounded-2xl p-4 shadow-2xl backdrop-blur-2xl border z-[10000] md:hidden"
+                                    style={{
+                                        backgroundColor: isDark ? "rgba(12, 12, 16, 0.94)" : "rgba(252, 251, 249, 0.95)",
+                                        borderColor: isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.1)",
+                                        color: isDark ? "#fdfdfd" : "#111111"
+                                    }}
+                                >
+                                    <div className="flex flex-col gap-1">
+                                        <div className="px-3 py-2 text-[9px] font-mono tracking-[0.25em] uppercase opacity-40 border-b mb-1" style={{ borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)" }}>
+                                            Navigation
+                                        </div>
+
+                                        {NAV_ITEMS.map((item) => {
+                                            const isActive = activeItem === item.href;
+                                            return (
+                                                <div key={item.href}>
+                                                    {item.name === "RESUME" ? (
+                                                        <a
+                                                            href={item.href}
+                                                            download="Subham_Resume_Updated.docx"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            onClick={() => setIsMobileMenuOpen(false)}
+                                                            className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-mono tracking-widest uppercase transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
+                                                            style={{ color: isDark ? "#fdfdfd" : "#111111" }}
+                                                        >
+                                                            <span>{item.name}</span>
+                                                            <span className="text-xs opacity-50">↓</span>
+                                                        </a>
+                                                    ) : (
+                                                        <Link
+                                                            href={item.href}
+                                                            onClick={(e) => handleClick(e, item.href)}
+                                                            className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-mono tracking-widest uppercase transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
+                                                            style={{
+                                                                color: isActive ? accentColor : (isDark ? "#fdfdfd" : "#111111"),
+                                                                fontWeight: isActive ? "700" : "500"
+                                                            }}
+                                                        >
+                                                            <span className="flex items-center gap-2">
+                                                                {isActive && (
+                                                                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
+                                                                )}
+                                                                {item.name}
+                                                            </span>
+                                                            <span className="text-xs opacity-40">→</span>
+                                                        </Link>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
+            </header>
         </>
     );
 }

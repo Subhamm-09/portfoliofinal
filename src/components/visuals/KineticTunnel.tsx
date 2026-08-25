@@ -157,8 +157,8 @@ export default function KineticTunnel() {
             <Canvas
                 shadows={false}
                 camera={{ fov: 75, near: 0.1, far: 100, position: [0, 0, 5] }}
-                gl={{ antialias: false, alpha: false, powerPreference: "high-performance" }}
-                dpr={[1, 1.5]}
+                gl={{ antialias: false, alpha: false }}
+                dpr={[1, 1]}
             >
                 <fog attach="fog" args={["#000000", 2, 30]} />
                 <TunnelGeometry />

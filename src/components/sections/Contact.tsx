@@ -121,12 +121,12 @@ export default function Contact() {
                             <div className="flex flex-col space-y-6">
                                 <span className="text-[10px] md:text-xs font-sans uppercase font-light tracking-[0.2em] text-primary/40 mb-2">Contact</span>
                                 <a
-                                    href="mailto:hello@example.com"
+                                    href="mailto:subhamprojects99@gmail.com"
                                     onMouseEnter={() => maskRadius.set(48)}
                                     onMouseLeave={() => maskRadius.set(0)}
                                     className="group relative w-fit text-primary font-sans text-lg md:text-xl font-light tracking-wide overflow-hidden hover:translate-x-1 transition-transform duration-[400ms] ease-out"
                                 >
-                                    hello@example.com
+                                    subhamprojects99@gmail.com
                                     <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#FF5F1F] -translate-x-full group-hover:translate-x-0 transition-transform duration-[400ms] ease-out shadow-[0_0_8px_rgba(255,95,31,0.8)]"></span>
                                 </a>
                                 <a
@@ -207,7 +207,7 @@ export default function Contact() {
                                 <div className="flex flex-col space-y-6">
                                     <span className="text-[10px] md:text-xs font-sans uppercase font-light tracking-[0.2em] text-[#EBE7E0]/60 mb-2">Contact</span>
                                     <div className="w-fit text-[#EBE7E0] font-sans text-lg md:text-xl font-light tracking-wide">
-                                        hello@example.com
+                                        subhamprojects99@gmail.com
                                     </div>
                                     <div className="w-fit text-[#EBE7E0] font-sans text-lg md:text-xl font-light tracking-wide">
                                         +91 xxx xxx xxxx

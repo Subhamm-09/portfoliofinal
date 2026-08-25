@@ -134,22 +134,18 @@ function ProjectOverview() {
 function DesignProcess() {
     const phases = [
         {
-            number: "01",
             title: "Data Strategy",
             description: "Analyzed complex datasets from acoustic sensors and grid substations, engineering robust preprocessing pipelines to ensure high-fidelity inputs for deep learning models."
         },
         {
-            number: "02",
             title: "Architecture",
             description: "Designed scalable, distributed backend architectures utilizing autoencoders and CNNs, prioritizing low-latency inference and optimized VRAM allocation for real-time processing."
         },
         {
-            number: "03",
             title: "AI Integration",
             description: "Built custom streaming APIs and Server-Sent Events (SSE) interfaces to bridge heavy machine learning backends with fluid, real-time client applications."
         },
         {
-            number: "04",
             title: "Development",
             description: "Built with Next.js App Router, Framer Motion spring physics, Three.js WebGL for depth effects, and Lenis for liquid scroll inertia — maintaining consistent 60fps across the board."
         }

@@ -27,12 +27,12 @@ const fascinate = Fascinate({
   variable: "--font-fascinate",
 });
 
-import CustomCursor from "@/components/ui/CustomCursor";
 import SmoothScroll from "@/components/ui/SmoothScroll";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import Navigation from "@/components/layout/Navigation";
 import PageTransition from "@/components/ui/PageTransition";
 import Socials from "@/components/layout/Socials";
+import CustomCursor from "@/components/ui/CustomCursor";
 
 export const metadata: Metadata = {
   title: "Subham | Portfolio",
@@ -46,17 +46,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var stored = localStorage.getItem('portfolio-theme');
+                  var dark = stored !== 'light';
+                  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${inter.variable} ${cormorant.variable} ${dorsa.variable} ${fascinate.variable} antialiased`}
       >
-        <ScrollToTop />
         <CustomCursor />
+        <ScrollToTop />
         <Navigation />
         <SmoothScroll>
-          <PageTransition>
-            {children}
-            <Socials />
-          </PageTransition>
+          {children}
+          <Socials />
         </SmoothScroll>
       </body>
     </html>

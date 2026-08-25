@@ -16,11 +16,23 @@ export function useTheme() {
 
   const toggle = () => {
     const next = !isDark;
-    setIsDark(next);
-    localStorage.setItem(THEME_KEY, next ? "dark" : "light");
-    document.documentElement.setAttribute("data-theme", next ? "dark" : "light");
-    // Broadcast so Navigation and page stay in sync
-    window.dispatchEvent(new CustomEvent("themechange", { detail: { dark: next } }));
+    
+    const applyTheme = () => {
+      setIsDark(next);
+      localStorage.setItem(THEME_KEY, next ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", next ? "dark" : "light");
+      window.dispatchEvent(new CustomEvent("themechange", { detail: { dark: next } }));
+    };
+
+    // @ts-ignore - startViewTransition might not be in standard TS DOM types yet
+    if (document.startViewTransition) {
+      // @ts-ignore
+      document.startViewTransition(() => {
+        applyTheme();
+      });
+    } else {
+      applyTheme();
+    }
   };
 
   // Listen for changes dispatched by other components (e.g. Navigation)

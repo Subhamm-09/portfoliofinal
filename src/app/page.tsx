@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Julius_Sans_One } from "next/font/google";
+import { Julius_Sans_One, Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -15,12 +15,19 @@ import {
 import "./home.css";
 import Preloader from "@/components/layout/Preloader";
 import { useTheme } from "@/hooks/useTheme";
+import dynamic from "next/dynamic";
+import EdgeSection from "@/components/sections/EdgeSection";
+import { PROJECTS } from "@/data/projects";
+
+const Statue3D = dynamic(() => import("@/components/visuals/Statue3D"), { ssr: false });
 
 const julius = Julius_Sans_One({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-julius",
 });
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 // ─── Easing ───────────────────────────────────────────────────────────────────
 const expo: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -54,18 +61,18 @@ const letterVariant: Variants = {
 
 // ─── Theme palettes ───────────────────────────────────────────────────────────
 const DARK = {
-  bg:        "#111111",
+  bg:        "#10100F",
   bgAlt:     "#0e0e0e",
   bgCard:    "#161616",
-  text:      "rgba(245,243,239,0.9)",
-  textSub:   "rgba(245,243,239,0.55)",
-  textMuted: "rgba(245,243,239,0.32)",
-  gold:      "#C99F55",
-  goldMuted: "rgba(201,159,85,0.6)",
-  goldGlow:  "rgba(201,159,85,0.07)",
-  statueGlow:"radial-gradient(ellipse at center, rgba(201,159,85,0.35) 0%, rgba(201,159,85,0.18) 25%, rgba(201,159,85,0.06) 55%, transparent 75%)",
-  watermark: "rgba(255,255,255,0.75)", // Subtle 75% opacity
-  border:    "rgba(245,243,239,0.07)",
+  text:      "#E7E2D8",
+  textSub:   "#8D8A82",
+  textMuted: "rgba(231,226,216,0.32)",
+  gold:      "#C9A34A",
+  goldMuted: "rgba(201,163,74,0.6)",
+  goldGlow:  "rgba(201,163,74,0.07)",
+  statueGlow:"radial-gradient(ellipse at center, rgba(201,163,74,0.2) 0%, rgba(201,163,74,0.08) 35%, transparent 75%)",
+  watermark: "rgba(231,226,216,0.75)",
+  border:    "rgba(231,226,216,0.07)",
   footerImg: 0.18,
   imgFilter: "none",
 };
@@ -76,13 +83,13 @@ const LIGHT = {
   bgCard:    "#F5F4F0",
   text:      "rgba(10,10,10,0.95)",
   textSub:   "rgba(10,10,10,0.70)",
-  textMuted: "rgba(10,10,10,0.60)",
-  gold:      "#D4AF37",
-  goldMuted: "rgba(212,175,55,0.65)",
-  goldGlow:  "rgba(212,175,55,0.09)",
-  statueGlow:"radial-gradient(ellipse at center, rgba(212,175,55,0.45) 0%, rgba(212,175,55,0.22) 25%, rgba(212,175,55,0.08) 55%, transparent 75%)",
-  watermark: "rgba(0,0,0,0.75)", // Subtle 75% opacity
-  border:    "rgba(10,10,10,0.08)",
+  textMuted: "rgba(10,10,10,0.55)",
+  gold:      "#B8445A",        // Pink — richer, more saturated
+  goldMuted: "rgba(184,68,90,0.60)",
+  goldGlow:  "rgba(184,68,90,0.12)",
+  statueGlow:"radial-gradient(ellipse at center, rgba(184,68,90,0.40) 0%, rgba(184,68,90,0.18) 30%, rgba(184,68,90,0.06) 60%, transparent 80%)",
+  watermark: "rgba(0,0,0,0.72)",
+  border:    "rgba(10,10,10,0.09)",
   footerImg: 0.12,
   imgFilter: "none",
 };
@@ -299,79 +306,108 @@ function WorkCard({
   title,
   subtitle,
   description,
+  tags = [],
   src,
   alt,
   reverse = false,
   index,
+  projectId,
   t,
+  isDark,
 }: {
   title: string;
   subtitle: string;
   description: string;
+  tags?: string[];
   src: string;
   alt: string;
   reverse?: boolean;
   index: number;
+  projectId: number;
   t: typeof DARK;
+  isDark: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-120px" });
+  
+  // Parallax Scrollytelling
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const imageY = useTransform(scrollYProgress, [0, 1], ["-6%", "6%"]);
+  const s_imageY = useSpring(imageY, { stiffness: 60, damping: 20 });
 
   return (
     <motion.div
       ref={ref}
-      className={`grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-16`}
+      className="grid grid-cols-1 lg:grid-cols-12 items-center gap-12 lg:gap-20 py-16 lg:py-24 border-b last:border-0"
+      style={{ borderColor: t.border }}
       initial="hidden"
       animate={inView ? "visible" : "hidden"}
       variants={stagger}
     >
       <motion.div
-        className={`${reverse ? "lg:col-start-6 lg:col-span-7 order-1 lg:order-2" : "lg:col-span-7"} overflow-hidden`}
+        className={`${reverse ? "lg:col-start-7 lg:col-span-6 order-1 lg:order-2" : "lg:col-span-6"} w-full h-full`}
         variants={
           reverse
-            ? { hidden: { opacity: 0, x: 40 }, visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: expo, delay: index * 0.1 } } }
-            : { hidden: { opacity: 0, x: -40 }, visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: expo, delay: index * 0.1 } } }
+            ? { hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: expo, delay: index * 0.1 } } }
+            : { hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: expo, delay: index * 0.1 } } }
         }
       >
-        <div className="aspect-[16/11] overflow-hidden relative group rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.15)]" style={{ backgroundColor: t.bgCard, border: `1px solid ${t.border}` }}>
-          <img
+        <div className="aspect-[4/3] overflow-hidden relative group border" style={{ backgroundColor: isDark ? t.bgCard : "#f7f7f5", borderColor: t.border }}>
+          <motion.img
             alt={alt}
             src={src}
-            className="w-full h-full object-cover transition-transform duration-[4s] ease-out group-hover:scale-[1.03]"
-            style={{ opacity: 1 }}
+            className="w-full h-[112%] absolute left-0 top-[-6%] object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            style={{ y: s_imageY }}
           />
         </div>
       </motion.div>
 
       <motion.div
-        className={`${reverse ? "order-2 lg:order-1 lg:col-span-5 lg:pr-16" : "lg:col-span-5 lg:pl-16"} py-8 lg:py-0 flex flex-col justify-center`}
+        className={`${reverse ? "order-2 lg:order-1 lg:col-span-5 lg:pr-12" : "lg:col-start-8 lg:col-span-5"} py-8 lg:py-0 flex flex-col justify-center`}
         variants={fadeUp}
       >
-        <span className="block text-[10px] tracking-[0.3em] uppercase mb-6" style={{ color: t.gold }}>
-          {String(index + 1).padStart(2, "0")}
+        <span className="block text-[11px] tracking-widest uppercase font-mono mb-6" style={{ color: t.gold }}>
+          {subtitle}
         </span>
-        <h3
-          className="font-[var(--font-julius)] text-4xl md:text-5xl lg:text-6xl tracking-wider leading-[1.1] mb-6"
-          style={{ color: t.text }}
-        >
+        <h3 className="font-[var(--font-julius)] text-[clamp(2.25rem,4vw,3.25rem)] font-bold tracking-tight leading-[1.1] mb-6" style={{ color: isDark ? t.text : "#111111" }}>
           {title}
         </h3>
-        {subtitle && (
-          <p className="text-xs tracking-[0.2em] uppercase font-light mb-6" style={{ color: t.textSub }}>
-            {subtitle}
-          </p>
+        
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {tags.map((tag) => (
+              <span key={tag}
+                className="border px-3 py-1 text-[10px] font-medium tracking-widest uppercase"
+                style={{
+                  color: t.gold,
+                  borderColor: t.gold + (isDark ? "30" : "40"),
+                  backgroundColor: t.goldGlow,
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         )}
-        <p className="text-[13px] leading-relaxed font-light mb-10 max-w-md" style={{ color: t.textMuted }}>
+
+        <p className="text-base leading-relaxed font-light mb-10 max-w-lg" style={{ color: isDark ? t.textSub : "#374151" }}>
           {description}
         </p>
+        
         <div>
           <Link
-            href="#"
-            className="group relative inline-flex items-center text-[10px] tracking-[0.2em] uppercase font-medium"
-            style={{ color: t.text }}
+            href={`/projects/${projectId}`}
+            className="group relative inline-flex items-center gap-3 px-6 py-3 text-[11px] tracking-widest uppercase font-semibold transition-all duration-300"
+            style={{
+              color: t.gold,
+              border: `1px solid ${t.gold + (isDark ? "50" : "60")}`,
+              backgroundColor: t.goldGlow,
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = t.gold; (e.currentTarget as HTMLElement).style.color = isDark ? "#10100F" : "#fff"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = t.goldGlow; (e.currentTarget as HTMLElement).style.color = t.gold; }}
           >
             <span>View Case Study</span>
-            <span className="absolute -bottom-1 left-0 w-0 h-[1px] transition-all duration-500 ease-out group-hover:w-full" style={{ backgroundColor: t.gold }} />
+            <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
           </Link>
         </div>
       </motion.div>
@@ -379,38 +415,13 @@ function WorkCard({
   );
 }
 
-// ─── Edge Row ─────────────────────────────────────────────────────────────────
-function EdgeRow({ label, body, delay, t }: { label: string; body: string; delay: number; t: typeof DARK }) {
-  return (
-    <Reveal delay={delay}>
-      <div className="group py-10 relative" style={{ borderTop: `1px solid ${t.border}` }}>
-        <motion.div
-          className="absolute top-0 left-0 h-[1px] origin-left"
-          style={{ background: `linear-gradient(to right, ${t.gold}80, transparent)` }}
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.4, ease: expo, delay }}
-        />
-        <div className="flex flex-col lg:flex-row lg:items-baseline gap-4 lg:gap-20">
-          <span className="text-[9px] tracking-[0.3em] uppercase w-32 shrink-0 font-medium" style={{ color: t.gold }}>
-            {label}
-          </span>
-          <p
-            className="text-xl lg:text-2xl font-light leading-[1.7] transition-colors duration-700"
-            style={{ color: t.textSub }}
-          >
-            {body}
-          </p>
-        </div>
-      </div>
-    </Reveal>
-  );
-}
+// ─── Edge Row (Deprecated) ────────────────────────────────────────────────────
+// Replaced by EdgeSection
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
   const handlePreloaderComplete = useCallback(() => setIsLoading(false), []);
   const { isDark } = useTheme();
 
@@ -420,285 +431,325 @@ export default function Home() {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
 
-  // Hero parallax
+  // ── Hero Cinematic Parallax ────────────────────────────────────────────────
   const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroImgY = useTransform(heroScroll, [0, 1], ["0%", "18%"]);
-  const heroTextY = useTransform(heroScroll, [0, 1], ["0%", "28%"]);
-  const heroOpacity = useTransform(heroScroll, [0, 0.65], [1, 0]);
-  const heroImgYSpring = useSpring(heroImgY, { stiffness: 50, damping: 20 });
+  const { scrollYProgress: heroScroll } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+
+  // Layer 1 — Background watermarks (fast, opposing directions = true parallax split)
+  const heroCreativeY    = useTransform(heroScroll, [0, 1], ["0%", "-55%"]); // drifts UP
+  const heroEngineeringY = useTransform(heroScroll, [0, 1], ["0%",  "55%"]); // drifts DOWN
+
+  // Layer 2 — Statue (slower, heavier)
+  const statueY       = useTransform(heroScroll, [0, 1], ["0%", "25%"]);
+  const statueScale   = useTransform(heroScroll, [0, 0.6, 1], [1, 0.98, 0.96]);
+  const statueOpacity = useTransform(heroScroll, [0, 0.5, 0.85], [1, 1, 0]);
+  const statueRotateY = useTransform(heroScroll, [0, 1], [0, -3]);
+  const statueRotateX = useTransform(heroScroll, [0, 1], [0, 1.5]);
+
+  // Layer 3 — Orbit ring (independent tilt & fade)
+  const orbitY       = useTransform(heroScroll, [0, 1], ["-50%", "-35%"]);
+  const orbitRotate  = useTransform(heroScroll, [0, 1], ["0deg", "30deg"]);
+  const orbitOpacity = useTransform(heroScroll, [0, 0.35, 0.55], [1, 1, 0]);
+
+  // Text opacity — slow fade, starts dissolving mid-scroll
+  const heroTextOpacity = useTransform(heroScroll, [0, 0.4, 0.75], [1, 1, 0]);
+
+  // Bottom strip opacity — quick exit on first scroll
+  const metadataOpacity = useTransform(heroScroll, [0, 0.12], [1, 0]);
+
+  // ── Spring configs — differentiated per layer ────────────────────────────
+  // Text layers: very low friction, high mass feel = silky
+  const textSpring   = { stiffness: 35, damping: 22, mass: 1.2 };
+  // Statue: heavier, slower = physical weight
+  const statueSpring = { stiffness: 28, damping: 30, mass: 1.6 };
+  // Orbit: lightest, most responsive
+  const orbitSpring  = { stiffness: 50, damping: 18, mass: 0.8 };
+
+  const s_heroCreativeY    = useSpring(heroCreativeY, textSpring);
+  const s_heroEngineeringY = useSpring(heroEngineeringY, textSpring);
+  const s_statueY          = useSpring(statueY, statueSpring);
+  const s_statueScale      = useSpring(statueScale, statueSpring);
+  const s_statueRotateY    = useSpring(statueRotateY, statueSpring);
+  const s_statueRotateX    = useSpring(statueRotateX, statueSpring);
+  const s_orbitY           = useSpring(orbitY, orbitSpring);
+  const s_orbitRotate      = useSpring(orbitRotate, orbitSpring);
 
   // Footer
   const footerRef = useRef<HTMLDivElement>(null);
   const footerInView = useInView(footerRef, { once: true, margin: "-100px" });
 
-  // Mouse glow
-  const [mousePos, setMousePos] = useState({ x: -600, y: -600 });
-  const goldRgb = isDark ? "184,147,85" : "201,169,110";
-
   return (
     <div
       className={`${julius.variable} min-h-screen`}
       style={{ backgroundColor: t.bg, color: t.text, transition: "background-color 0.7s ease, color 0.7s ease" }}
-      onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
     >
       {/* Scroll progress bar */}
       <motion.div
         style={{ scaleX, transformOrigin: "left", backgroundColor: t.gold }}
-        className="fixed top-0 left-0 right-0 h-[1px] z-[200] pointer-events-none"
+        className="fixed top-0 left-0 right-0 h-[2px] z-[200] pointer-events-none"
       />
 
-      <Preloader onComplete={handlePreloaderComplete} />
+      <Preloader onComplete={handlePreloaderComplete} isReady={isModelLoaded} />
 
       <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet"
       />
 
-      {/* Grain */}
+      {/* Grain & Paper Texture */}
       <div
-        className="grain-overlay pointer-events-none fixed inset-0 z-[2]"
+        className={`pointer-events-none fixed inset-0 z-[2] ${!isDark ? 'mix-blend-multiply' : ''}`}
         style={{
-          opacity: isDark ? 0.035 : 0.022,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-          backgroundRepeat: "repeat",
-          backgroundSize: "128px 128px",
+          opacity: isDark ? 0.035 : 0.6,
+          backgroundImage: isDark
+            ? `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
+            : `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='5' result='noise'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0.85  0 1 0 0 0.82  0 0 1 0 0.78  0 0 0 0.12 0' in='noise'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`,
+          backgroundRepeat: isDark ? "repeat" : "repeat, repeat",
+          backgroundSize: isDark ? "128px 128px" : "400px 400px, 128px 128px",
         }}
       />
 
-      {/* Cursor light */}
-      <div
-        className="pointer-events-none fixed inset-0 z-[1]"
-        style={{
-          background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(${goldRgb},0.055), transparent 55%)`,
-        }}
-      />
 
-      {/* Vignette */}
+      {/* Vignette - extremely subtle to frame the studio */}
       <div
         className="pointer-events-none fixed inset-0 z-[1]"
-        style={{ background: "radial-gradient(ellipse 110% 110% at 50% 50%, transparent 40%, rgba(0,0,0,0.45) 100%)" }}
-      />
-      {/* Noise Texture Overlay */}
-      <div 
-        className="pointer-events-none fixed inset-0 z-50 opacity-[0.035] mix-blend-overlay"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+        style={{ background: isDark 
+          ? "radial-gradient(ellipse 150% 150% at 50% 50%, transparent 40%, rgba(0,0,0,0.4) 100%)"
+          : "radial-gradient(ellipse 120% 120% at 50% 50%, transparent 30%, rgba(220,215,205,0.3) 100%)"
+        }}
       />
 
       <main style={{ backgroundColor: t.bg, transition: "background-color 0.7s ease" }}>
 
-        {/* ── HERO ──────────────────────────────────────────────────────────── */}
+        {/* ── HERO CINEMATIC PARALLAX ──────────────────────────────────────────────────────────── */}
         <section
           ref={heroRef}
-          className="relative min-h-screen flex flex-col overflow-hidden"
+          className="relative min-h-screen flex flex-col overflow-hidden max-w-[1400px] mx-auto"
           style={{ backgroundColor: t.bg, transition: "background-color 0.7s ease" }}
         >
-          {/* Warm centre glow */}
-          <div
-            className="absolute inset-0 z-0 pointer-events-none"
+          {/* Soft Studio Environment Backdrop */}
+          <motion.div
+            className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-700"
             style={{
+              opacity: heroTextOpacity,
               background: isDark
-                ? "radial-gradient(ellipse 65% 55% at 50% 55%, rgba(184,147,85,0.08) 0%, transparent 70%)"
-                : "radial-gradient(ellipse 65% 55% at 50% 55%, rgba(201,169,110,0.12) 0%, transparent 70%)",
+                ? "radial-gradient(circle at 45% 40%, #1a1917 0%, #10100F 70%)"
+                : "radial-gradient(ellipse 60% 55% at 50% 52%, rgba(184,68,90,0.14) 0%, rgba(184,68,90,0.06) 45%, transparent 72%)",
             }}
           />
 
-          {/* Watermark — Creative Engineering */}
+          {/* Physical Grounding Floor Shadow - Dark Mode Only */}
+          <motion.div 
+             className="absolute top-1/2 left-1/2 w-[40vw] max-w-[400px] aspect-square rounded-full z-0 pointer-events-none blur-[40px] transition-all duration-700"
+             style={{ 
+               opacity: isDark ? statueOpacity : 0,
+               backgroundColor: isDark ? "#000000" : "transparent",
+               transform: "translate(-50%, -50%) scaleY(0.2) translateY(550%)"
+             }}
+          />
+
+          {/* Watermark BACK — CREATIVE: entrance from above, then scroll-driven */}
           <motion.div
-            className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-none select-none overflow-hidden gap-2"
-            style={{ y: heroTextY }}
+            className="absolute inset-0 z-0 pointer-events-none"
+            initial={{ y: "-60%", opacity: 0 }}
+            animate={isLoading ? { y: "-60%", opacity: 0 } : { y: "0%", opacity: 1 }}
+            transition={{ duration: 1.6, ease: expo, delay: 0.2 }}
           >
-            <span
-              className="font-sans font-light text-[7vw] md:text-[6vw] uppercase whitespace-nowrap leading-none tracking-[0.2em] md:tracking-[0.25em]"
-              style={{ color: t.watermark, marginLeft: "0.25em" }}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+              style={{ y: s_heroCreativeY, opacity: heroTextOpacity }}
             >
-              CREATIVE
-            </span>
-            <span
-              className="font-sans font-light text-[7vw] md:text-[6vw] uppercase whitespace-nowrap leading-none tracking-[0.2em] md:tracking-[0.25em]"
-              style={{ color: t.watermark, marginLeft: "0.25em" }}
-            >
-              ENGINEERING
-            </span>
+              <span
+                className="font-sans font-light text-[8vw] md:text-[7.5vw] uppercase whitespace-nowrap leading-none -translate-y-[12vh]"
+                style={{ color: t.watermark, letterSpacing: "0.25em" }}
+              >
+                CREATIVE
+              </span>
+            </motion.div>
           </motion.div>
 
           {/* Statue and Effects */}
           <motion.div
             className="absolute inset-0 z-10 pointer-events-none"
-            style={{ y: heroImgYSpring }}
+            style={{ y: s_statueY, scale: s_statueScale, opacity: statueOpacity, rotateY: s_statueRotateY, rotateX: s_statueRotateX }}
+            initial={{ y: 24, opacity: 0, scale: 0.96 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            transition={{ duration: 1.8, ease: expo, delay: 0.4 }}
           >
-            {/* Museum glow behind statue */}
-            <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[44vw] max-w-[460px] aspect-square pointer-events-none"
-              style={{ background: t.statueGlow }}
-            />
-
             {/* Subtle orbital ring */}
             <motion.div 
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[65vw] md:w-[45vw] max-w-[650px] aspect-square rounded-full z-0 pointer-events-none"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 70, repeat: Infinity, ease: "linear" }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 w-[70vw] md:w-[50vw] max-w-[700px] aspect-square rounded-full z-0 pointer-events-none"
               style={{
-                borderWidth: "1px",
+                borderWidth: isDark ? "1px" : "1.5px",
                 borderStyle: "solid",
-                borderColor: t.gold + "60", // 60% opacity
+                borderColor: t.gold + (isDark ? "40" : "70"),
+                rotate: s_orbitRotate,
+                y: s_orbitY,
+                opacity: orbitOpacity,
               }}
             >
-              {/* Orbital accent dot */}
+              {/* Orbital accent dot (continuously revolving) */}
               <div 
-                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full shadow-[0_0_15px_rgba(255,255,255,0.6)]"
+                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[5px] h-[5px] rounded-full animate-[spin_80s_linear_infinite]"
                 style={{ backgroundColor: t.gold }}
               />
             </motion.div>
 
-            {/* Statue — 25% smaller */}
+            {/* Statue */}
             <div
-              className={`absolute top-1/2 left-1/2 w-[52vw] sm:w-[35vw] md:w-[26vw] max-w-[390px] aspect-square ${!isLoading ? "animate-hero-float" : ""}`}
-              style={{
-                opacity: isLoading ? 0 : 1,
-                transition: "opacity 1.6s cubic-bezier(0.4,0,0.2,1)",
-                filter: isDark
-                  ? "drop-shadow(0 30px 60px rgba(0,0,0,0.6))"
-                  : "drop-shadow(0 20px 40px rgba(0,0,0,0.18))",
-              }}
+              className={`absolute top-1/2 left-1/2 w-[52vw] sm:w-[35vw] md:w-[26vw] max-w-[390px] aspect-square`}
+              style={{ transform: "translate(-50%, -50%)" }}
             >
-              <Image
-                src="/greekhero.png"
-                alt="Greek Hero Statue"
-                fill
-                className="object-contain object-center"
-                priority
+              <Statue3D onLoaded={() => setIsModelLoaded(true)} />
+            </div>
+
+          </motion.div>
+
+          {/* Watermark FRONT — ENGINEERING: entrance from below, then scroll-driven */}
+          <motion.div
+            className="absolute inset-0 z-20 pointer-events-none"
+            initial={{ y: "60%", opacity: 0 }}
+            animate={isLoading ? { y: "60%", opacity: 0 } : { y: "0%", opacity: 1 }}
+            transition={{ duration: 1.6, ease: expo, delay: 0.2 }}
+          >
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+              style={{ y: s_heroEngineeringY, opacity: heroTextOpacity }}
+            >
+              <span
+                className="font-sans font-light text-[8vw] md:text-[7.5vw] uppercase whitespace-nowrap leading-none translate-y-[12vh]"
+                style={{ color: t.watermark, letterSpacing: "0.25em" }}
+              >
+                ENGINEERING
+              </span>
+            </motion.div>
+          </motion.div>
+
+          {/* Bottom — Role identity strip */}
+          <motion.div
+            className="absolute bottom-0 left-0 right-0 z-30 px-6 md:px-12 lg:px-24 pb-10"
+            style={{ opacity: metadataOpacity }}
+          >
+            {/* Accent separator line */}
+            <div className="w-full mb-6 relative" style={{ height: "1px", backgroundColor: t.border }}>
+              <motion.div
+                className="absolute left-0 top-0 h-full"
+                style={{ backgroundColor: t.gold, width: "60px" }}
+                initial={{ scaleX: 0, originX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 1.2, ease: expo, delay: 1.2 }}
               />
             </div>
-          </motion.div>
 
-          {/* Top-left — Logo / Name */}
-          <motion.div
-            className="absolute top-7 left-6 md:left-12 lg:left-24 z-50 pointer-events-none flex items-center h-[42px]"
-            style={{ opacity: heroOpacity }}
-            initial={{ opacity: 0, x: -16 }}
-            animate={!isLoading ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 1.4, ease: gentle, delay: 0.2 }}
-          >
-            <h1
-              className="font-[var(--font-cormorant)] text-lg md:text-xl lg:text-2xl tracking-[0.3em] uppercase font-medium mix-blend-normal"
-              style={{ color: t.text }}
-            >
-              Subham Panda
-            </h1>
-          </motion.div>
+            <div className="flex items-center justify-between gap-6">
+              {/* Left: Role tags as pill chips */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {["Developer", "AI / ML", "Full Stack", "DSA"].map((role, i) => (
+                  <motion.span
+                    key={role}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: expo, delay: 1.4 + i * 0.1 }}
+                    className="text-[9px] tracking-[0.28em] uppercase font-medium px-3 py-1.5 border"
+                    style={{
+                      color: t.gold,
+                      borderColor: t.gold + (isDark ? "35" : "45"),
+                      backgroundColor: t.goldGlow,
+                    }}
+                  >
+                    {role}
+                  </motion.span>
+                ))}
+              </div>
 
-          {/* Bottom-left — role */}
-          <motion.div
-            className="absolute bottom-16 left-6 md:left-12 lg:left-24 z-20 pointer-events-none"
-            style={{ opacity: heroOpacity }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={!isLoading ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 1.4, ease: expo, delay: 0.6 }}
-          >
-            <motion.div
-              className="w-5 h-[1px] mb-5"
-              style={{ backgroundColor: t.gold }}
-              initial={{ scaleX: 0, originX: 0 }}
-              animate={!isLoading ? { scaleX: 1 } : {}}
-              transition={{ duration: 1, ease: expo, delay: 1 }}
-            />
-            <p className="text-[10px] tracking-[0.22em] uppercase mb-1.5 font-light" style={{ color: t.textSub }}>
-              Machine Learning Engineer
-            </p>
-            <p className="text-[10px] tracking-[0.22em] uppercase font-light" style={{ color: t.textMuted }}>
-              Software Developer
-            </p>
-          </motion.div>
-
-          {/* Bottom-right — tagline + badge */}
-          <motion.div
-            className="absolute bottom-16 right-6 md:right-12 lg:right-24 z-20 pointer-events-none text-right"
-            style={{ opacity: heroOpacity }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={!isLoading ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 1.4, ease: expo, delay: 0.75 }}
-          >
-            <p className="text-[11px] leading-[1.9] max-w-[190px] ml-auto font-light tracking-wide mb-5" style={{ color: t.textMuted }}>
-              Building intelligent software<br />experiences with modern AI.
-            </p>
-            <span className="inline-flex items-center gap-2 text-[9px] tracking-[0.25em] uppercase font-medium" style={{ color: t.gold }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: t.gold }} />
-              Open to Opportunities
-            </span>
-          </motion.div>
-
-          {/* Scroll indicator */}
-          <motion.div
-            className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center"
-            initial={{ opacity: 0 }}
-            animate={!isLoading ? { opacity: 1 } : {}}
-            transition={{ duration: 1, ease: gentle, delay: 1.5 }}
-          >
-            <motion.div
-              className="w-[1px] h-10"
-              style={{ background: `linear-gradient(to bottom, ${t.gold}70, transparent)` }}
-              animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.4, 1, 0.4] }}
-              transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-            />
+              {/* Right: Status badge */}
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, ease: expo, delay: 1.8 }}
+                className="inline-flex items-center gap-2.5 text-[9px] tracking-[0.3em] uppercase font-medium shrink-0"
+                style={{ color: t.textMuted }}
+              >
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: t.gold, animation: "pulse 3s infinite" }} />
+                Available for work
+              </motion.span>
+            </div>
           </motion.div>
         </section>
+
+
 
         {/* ── CASE STUDIES ──────────────────────────────────────────────────── */}
         <section
-          className="py-32 md:py-48 px-6 md:px-12 lg:px-24 space-y-32 md:space-y-48"
-          style={{ backgroundColor: t.bg, transition: "background-color 0.7s ease" }}
+          className="py-32 md:py-48 relative border-t transition-colors duration-700"
+          style={{ backgroundColor: isDark ? t.bg : "#faf9f6", borderColor: t.border }}
         >
-          <Reveal>
-            <div className="flex items-center justify-between pb-6 mb-20" style={{ borderBottom: `1px solid ${t.border}` }}>
-              <span className="text-[9px] tracking-[0.3em] uppercase font-light" style={{ color: t.textMuted }}>
-                Selected Work
-              </span>
-              <span className="text-[9px] tracking-[0.3em] uppercase font-light" style={{ color: t.textMuted }}>
-                01 — 03
-              </span>
-            </div>
-          </Reveal>
+          {/* Subtle grid pattern overlay */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)', backgroundSize: '24px 24px', color: isDark ? '#fff' : '#000' }} />
 
-          <WorkCard index={0} title="Deep Ocean" subtitle="" description="Underwater acoustic classification pipeline for ROVs/AUVs using deep learning to process real-time sonar streams in noisy subsea environments." src="/deep_ocean.png" alt="Underwater acoustic wave visual" t={t} />
-          <WorkCard index={1} title="Grid Sentinel" subtitle="" description="Neural anomaly detection for power grid substations, utilizing autoencoders to identify cyber-physical intrusions in real-time." src="/grid_sentinel.png" alt="Abstract neural node grid" reverse t={t} />
-          <WorkCard index={2} title="Neural Vision" subtitle="" description="High-throughput inference for early-stage pathology detection in high-resolution medical imaging, optimizing VRAM allocation for large tensor operations." src="/neural_vision.png" alt="Abstract light propagation" t={t} />
+          <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24">
+            <Reveal>
+              <div className="flex items-center justify-between pb-8 mb-16 border-b" style={{ borderColor: t.border }}>
+                <span className="text-[12px] tracking-widest uppercase font-mono" style={{ color: t.textSub }}>
+                  SELECTED WORK
+                </span>
+                <Link
+                  href="/projects"
+                  className="text-[11px] tracking-widest uppercase font-mono transition-colors duration-300 hover:opacity-80"
+                  style={{ color: t.gold }}
+                >
+                  View Full Archive ↗
+                </Link>
+              </div>
+            </Reveal>
+
+            {PROJECTS.slice(0, 3).map((project, idx) => (
+              <WorkCard
+                key={project.id}
+                index={idx}
+                projectId={project.id}
+                title={project.title}
+                subtitle={project.subtitle || project.category}
+                tags={project.tags}
+                description={project.desc}
+                src={project.img}
+                alt={project.title}
+                reverse={idx % 2 === 1}
+                t={t}
+                isDark={isDark}
+              />
+            ))}
+          </div>
         </section>
 
         {/* ── MY EDGE ───────────────────────────────────────────────────────── */}
-        <section
-          className="py-32 md:py-48 px-8 md:px-16 lg:px-24"
-          style={{ backgroundColor: t.bgAlt, transition: "background-color 0.7s ease" }}
-        >
-          <div className="max-w-5xl mx-auto">
-            <Reveal variants={fadeIn}>
-              <h2 className="font-[var(--font-julius)] text-2xl md:text-3xl tracking-[0.16em] uppercase mb-24" style={{ color: t.textSub }}>
-                My Edge
-              </h2>
-            </Reveal>
-            <EdgeRow label="Architecture" body="Scalable data pipelines and robust backend systems capable of real-time inference." delay={0} t={t} />
-            <EdgeRow label="Intelligence" body="Deep learning models that solve complex physical and digital anomalies." delay={0.1} t={t} />
-            <EdgeRow label="Performance" body="Computational optimisation and memory allocation for ultra-low latency execution." delay={0.2} t={t} />
-          </div>
-        </section>
+        <EdgeSection />
 
         {/* ── FOOTER ────────────────────────────────────────────────────────── */}
         <footer
           className="relative pt-32 md:pt-48 pb-12 overflow-hidden"
-          style={{ backgroundColor: t.bg, transition: "background-color 0.7s ease" }}
+          style={{ backgroundColor: DARK.bg, transition: "background-color 0.7s ease" }}
         >
-          <div className="absolute inset-0 z-0 pointer-events-none" style={{ opacity: t.footerImg }}>
+          <div className="absolute inset-0 z-0 pointer-events-none" style={{ opacity: DARK.footerImg }}>
             <Image src="/footer.png" alt="" fill className="object-cover object-center" />
           </div>
           <div
             className="absolute inset-0 z-0 pointer-events-none"
-            style={{ background: `linear-gradient(to bottom, ${t.bg} 0%, transparent 30%, ${t.bg} 88%)` }}
+            style={{ background: `linear-gradient(to bottom, ${DARK.bg} 0%, transparent 30%, ${DARK.bg} 88%)` }}
           />
 
-          <div ref={footerRef} className="relative z-10 px-8 md:px-16 lg:px-24 mb-24">
+          <div ref={footerRef} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 flex flex-col mb-12">
+            <Reveal variants={fadeIn}>
+              <h2 className="text-[10px] tracking-[0.25em] uppercase font-medium mb-12" style={{ color: DARK.textMuted }}>
+                CONNECT
+              </h2>
+            </Reveal>
             <motion.h2
-              className="font-[var(--font-julius)] text-6xl md:text-8xl lg:text-[9rem] tracking-tight uppercase leading-none select-none"
-              style={{ color: t.watermark }}
+              className="font-[var(--font-julius)] text-[12vw] tracking-wider uppercase leading-none select-none mb-24"
+              style={{ color: DARK.watermark }}
               variants={stagger}
               initial="hidden"
               animate={footerInView ? "visible" : "hidden"}
@@ -707,49 +758,34 @@ export default function Home() {
             </motion.h2>
 
             <motion.div
-              className="mt-16 flex flex-col md:flex-row md:items-end gap-10 md:gap-20"
+              className="mt-12 flex flex-col items-center text-center border-t pt-12"
+              style={{ borderColor: DARK.border }}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 1.2, ease: expo, delay: 0.3 }}
             >
               <div>
-                <p className="text-[9px] tracking-[0.28em] uppercase mb-4" style={{ color: t.textMuted }}>Get in touch</p>
+                <p className="text-[10px] tracking-[0.25em] uppercase mb-4 font-medium" style={{ color: DARK.textMuted }}>Get in touch</p>
                 <a
-                  href="mailto:subhampanda@example.com"
-                  className="text-xl md:text-2xl font-light tracking-wide transition-colors duration-700"
-                  style={{ color: t.textSub }}
-                  onMouseEnter={e => (e.currentTarget.style.color = t.gold)}
-                  onMouseLeave={e => (e.currentTarget.style.color = t.textSub)}
+                  href="mailto:subhamprojects99@gmail.com"
+                  className="text-3xl md:text-5xl lg:text-6xl font-light tracking-wide transition-colors duration-700 block mt-6"
+                  style={{ color: DARK.textSub }}
+                  onMouseEnter={e => (e.currentTarget.style.color = DARK.gold)}
+                  onMouseLeave={e => (e.currentTarget.style.color = DARK.textSub)}
                 >
-                  subhampanda@example.com
+                  subhamprojects99@gmail.com
                 </a>
-              </div>
-
-              <div className="flex gap-8 text-[9px] tracking-[0.28em] uppercase" style={{ color: t.textMuted }}>
-                {["GitHub", "LinkedIn", "LeetCode"].map((s) => (
-                  <motion.a
-                    key={s}
-                    href="#"
-                    className="transition-colors duration-500"
-                    whileHover={{ y: -2, color: t.gold } as any}
-                  >
-                    {s}
-                  </motion.a>
-                ))}
               </div>
             </motion.div>
           </div>
 
           <div
-            className="relative z-10 px-8 md:px-16 lg:px-24 pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-            style={{ borderTop: `1px solid ${t.border}` }}
+            className="relative z-10 px-8 md:px-16 lg:px-24 pt-8 flex flex-col items-center justify-center gap-4"
+            style={{ borderTop: `1px solid ${DARK.border}` }}
           >
-            <span className="text-[9px] tracking-[0.3em] uppercase" style={{ color: t.textMuted }}>
-              © 2025 Subham Panda
-            </span>
-            <span className="text-[9px] tracking-[0.3em] uppercase" style={{ color: t.textMuted }}>
-              Machine Learning · Software Engineering
+            <span className="text-[9px] tracking-[0.3em] uppercase text-center" style={{ color: DARK.textMuted }}>
+              Machine Learning & Software Engineering
             </span>
           </div>
         </footer>

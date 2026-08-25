@@ -5,160 +5,16 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import GoldenTrail from "@/components/visuals/GoldenTrail";
-
-type Project = {
-    id: number;
-    title: string;
-    category: string;
-    desc: string;
-    color: string;
-    textColor: string;
-    img?: string;
-    link?: string;
-};
-
-const PROJECTS: Project[] = [
-    {
-        id: 1,
-        title: "Deep Ocean: Acoustic Classifier",
-        category: "MACHINE LEARNING",
-        desc: "Deep learning pipeline for real-time marine mammal acoustic classification from noisy underwater sensor streams.",
-        color: "#0a0a0a",
-        textColor: "#fdfdfd",
-        img: "/1.jpg"
-    },
-    {
-        id: 2,
-        title: "Anomaly Architect",
-        category: "CYBERSECURITY AI",
-        desc: "A neural anomaly detection system for power grid substations, utilizing autoencoders to identify cyber-physical intrusions.",
-        color: "#18181b",
-        textColor: "#fdfdfd",
-        img: "/2.jpg"
-    },
-    {
-        id: 3,
-        title: "Neural Vision",
-        category: "COMPUTER VISION",
-        desc: "High-throughput inference engine for early-stage pathology detection in high-resolution medical imaging.",
-        color: "#fdfdfd",
-        textColor: "#fdfdfd",
-        img: "/3.jpg"
-    },
-    {
-        id: 4,
-        title: "Distributed API Gateway",
-        category: "SYSTEMS ENGINEERING",
-        desc: "High-performance distributed rate limiter and API Gateway built with Go and Redis for enterprise traffic management.",
-        color: "#0a0a0a",
-        textColor: "#fdfdfd",
-        img: "/4.jpg"
-    },
-    {
-        id: 5,
-        title: "Federated Learning Mesh",
-        category: "DISTRIBUTED AI",
-        desc: "Decentralized model training architecture enabling privacy-preserving machine learning across edge devices.",
-        color: "#181818",
-        textColor: "#fdfdfd",
-        img: "/5.jpg"
-    }
-];
-
-const HorizontalScrollCarousel = () => {
-    const targetRef = useRef<HTMLDivElement | null>(null);
-    const { scrollYProgress } = useScroll({
-        target: targetRef,
-    });
-
-    const x = useTransform(scrollYProgress, [0, 1], ["0%", "-85%"]);
-
-    return (
-        <section ref={targetRef} className="relative h-[400vh] bg-black">
-            <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-                <motion.div style={{ x }} className="flex gap-4 px-4 sm:px-12 md:px-24">
-                    {PROJECTS.map((project, index) => {
-                        return <Card project={project} key={project.id} index={index + 1} total={PROJECTS.length} />;
-                    })}
-                </motion.div>
-            </div>
-        </section>
-    );
-};
-
-const Card = ({ project, index, total }: { project: Project; index: number; total: number }) => {
-    return (
-        <div
-            className="group relative h-[65vh] w-[85vw] sm:w-[60vw] md:w-[45vw] lg:w-[35vw] overflow-hidden rounded-[2rem] flex flex-col justify-between p-8 md:p-12 transition-transform duration-500 ease-out hover:scale-[0.98]"
-            style={{ backgroundColor: project.color, color: project.textColor }}
-        >
-            {/* Background Image if exists */}
-            {project.img && (
-                <div className="absolute inset-0 z-0 opacity-70 transition-opacity duration-700 group-hover:opacity-100">
-                    <Image
-                        src={project.img}
-                        alt={project.title}
-                        fill
-                        className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/50 group-hover:bg-black/30 transition-colors duration-700" />
-                </div>
-            )}
-
-            {/* Noise overlay for texture */}
-            <div
-                className="absolute inset-0 z-10 opacity-20 pointer-events-none mix-blend-overlay"
-                style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
-                }}
-            />
-
-            <div className="relative z-20 flex justify-between items-start w-full">
-                <span className="text-sm font-medium tracking-[0.2em] uppercase text-[#C9A96E]">
-                    {project.category}
-                </span>
-                <span className="text-sm font-mono opacity-60 text-white">
-                    {index.toString().padStart(2, '0')} / {total.toString().padStart(2, '0')}
-                </span>
-            </div>
-
-            <div className="relative z-20 mt-auto">
-                <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight mb-6 transition-transform duration-500 group-hover:translate-x-2">
-                    {project.title}
-                </h2>
-                <p className="text-lg md:text-xl font-light opacity-80 max-w-sm mb-8 transition-transform duration-500 group-hover:translate-x-2 delay-75">
-                    {project.desc}
-                </p>
-
-                <Link href={project.link || "#"} className="inline-flex items-center gap-2 text-sm uppercase tracking-widest font-medium group/link transition-transform duration-500 group-hover:translate-x-2 delay-100">
-                    Explore Project
-                    <span className="block transform transition-transform duration-300 group-hover/link:translate-x-2 group-hover/link:-translate-y-2">
-                        ↗
-                    </span>
-                </Link>
-            </div>
-        </div>
-    );
-};
+import { useTheme } from "@/hooks/useTheme";
+import SelectedExperience from "@/components/sections/SelectedExperience";
+import ProjectsTriptych from "@/components/sections/ProjectsTriptych";
 
 export default function UnifiedProjectsPage() {
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [isHovering, setIsHovering] = useState(false);
+    const { isDark } = useTheme();
 
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            setMousePosition({
-                x: e.clientX,
-                y: e.clientY,
-            });
-        };
-
-        window.addEventListener("mousemove", handleMouseMove);
-
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-        };
-    }, []);
+    const t = isDark 
+      ? { bg: "#080808", text: "#fdfdfd", gold: "#C9A96E", border: "rgba(255,255,255,0.1)", textSub: "#8a8a8a", textMuted: "#4a4a4a" }
+      : { bg: "#FCFBF9", text: "rgba(10,10,10,0.95)", gold: "#B8445A", border: "rgba(0,0,0,0.1)", textSub: "rgba(0,0,0,0.6)", textMuted: "rgba(0,0,0,0.4)" };
 
     return (
         <>
@@ -166,42 +22,16 @@ export default function UnifiedProjectsPage() {
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap');
 
         .unified-projects {
-          --black: #080808;
-          --white: #fdfdfd;
-          --gold: #C9A96E;
+          --black: ${t.bg};
+          --white: ${t.text};
+          --gold: ${t.gold};
           --font-serif: 'Cormorant Garamond', serif;
           --font-sans: 'Inter', sans-serif;
           background-color: var(--black);
           color: var(--white);
           font-family: var(--font-sans);
           -webkit-font-smoothing: antialiased;
-          cursor: none;
-        }
-
-        .unified-projects * {
-          cursor: none;
-        }
-
-        .custom-cursor {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 16px;
-          height: 16px;
-          background-color: var(--gold);
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 9999;
-          transform: translate(-50%, -50%);
-          transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease;
-          mix-blend-mode: difference;
-        }
-
-        .custom-cursor.hovering {
-          width: 80px;
-          height: 80px;
-          background-color: transparent;
-          border: 1px solid var(--gold);
+          transition: background-color 0.7s ease, color 0.7s ease;
         }
 
         .hero-section {
@@ -263,29 +93,17 @@ export default function UnifiedProjectsPage() {
       `}</style>
 
             <div className="unified-projects">
-                <motion.div
-                    className={`custom-cursor ${isHovering ? "hovering" : ""}`}
-                    animate={{
-                        x: mousePosition.x,
-                        y: mousePosition.y,
-                    }}
-                    transition={{ type: "tween", ease: "backOut", duration: 0.1 }}
-                />
-
-                <main
-                    onMouseEnter={() => setIsHovering(false)}
-                    className="bg-black"
-                >
+                <main>
                     {/* Intro Section */}
                     <section className="hero-section">
                         <GoldenTrail />
-                        <motion.h1
+                        <motion.h1 
                             initial={{ opacity: 0, y: 50 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                             className="hero-title relative z-10 pointer-events-none"
                         >
-                            Technical<br />Case Studies
+                            The<br />Archive
                         </motion.h1>
                         <motion.p
                             initial={{ opacity: 0 }}
@@ -307,28 +125,31 @@ export default function UnifiedProjectsPage() {
                         </motion.div>
                     </section>
 
-                    {/* Immersive Horizontal Gallery */}
-                    <div
-                        onMouseEnter={() => setIsHovering(true)}
-                        onMouseLeave={() => setIsHovering(false)}
-                    >
-                        <HorizontalScrollCarousel />
+                    {/* Internship / Selected Experience */}
+                    <div className="w-full relative z-20 bg-transparent pt-12">
+                        <SelectedExperience isDark={isDark} t={t} />
+                    </div>
+
+                    {/* 3-Project Triptych Showcase */}
+                    <div className="w-full relative z-20 bg-transparent">
+                        <ProjectsTriptych isDark={isDark} t={t} />
                     </div>
 
                     {/* Footer Section Space */}
-                    <section className="h-screen flex items-center justify-center bg-black relative z-10">
-                        <div className="text-center">
-                            <p className="font-serif text-3xl md:text-5xl lg:text-7xl mb-8 opacity-80">
+                    <section className="h-[60vh] md:h-[80vh] flex items-center justify-center relative z-10 border-t" style={{ borderColor: t.border }}>
+                        <div className="text-center px-6">
+                            <p className="font-serif text-3xl md:text-5xl lg:text-7xl mb-8 opacity-85">
                                 Let&apos;s build something <br />
-                                <span className="text-[#C9A96E] italic">extraordinary.</span>
+                                <span className="italic" style={{ color: "var(--gold)" }}>extraordinary.</span>
                             </p>
                             <Link
-                                href="mailto:hello@subham.design"
-                                className="text-sm uppercase tracking-[0.3em] hover:text-[#C9A96E] transition-colors"
-                                onMouseEnter={() => setIsHovering(true)}
-                                onMouseLeave={() => setIsHovering(false)}
+                                href="mailto:subhamprojects99@gmail.com"
+                                className="text-sm uppercase tracking-[0.3em] transition-colors relative z-20 inline-block py-2"
+                                style={{ color: "var(--white)" }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = "var(--gold)"}
+                                onMouseLeave={(e) => e.currentTarget.style.color = "var(--white)"}
                             >
-                                hello@subham.design
+                                subhamprojects99@gmail.com
                             </Link>
                         </div>
                     </section>

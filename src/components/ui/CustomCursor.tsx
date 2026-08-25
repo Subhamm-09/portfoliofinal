@@ -1,109 +1,77 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, useMotionValue } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function CustomCursor() {
-    const [hoverState, setHoverState] = useState<"default" | "hover" | "expand" | "hidden">("default");
+  const [mousePosition, setMousePosition] = useState({ x: -100, y: -100 });
+  const [isHovering, setIsHovering] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [cursorVariant, setCursorVariant] = useState<"default" | "project">("default");
 
-    // Direct motion values completely bypass the React render cycle
-    // This removes the "lag" effect and ties the graphics perfectly 1:1 with hardware inputs
-    const mouseX = useMotionValue(-100);
-    const mouseY = useMotionValue(-100);
+  useEffect(() => {
+    if (window.matchMedia("(pointer: coarse)").matches) return;
 
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            // Update coordinates directly, no easing delays
-            mouseX.set(e.clientX);
-            mouseY.set(e.clientY);
-        };
-
-        const handleMouseOver = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-
-            if (target.hasAttribute("data-cursor-hide") || target.closest("[data-cursor-hide]")) {
-                setHoverState("hidden");
-            } else if (target.closest("[data-cursor-expand]")) {
-                // Expand state: solid filled dot (matches projects-page cursor balloon)
-                setHoverState("expand");
-            } else if (
-                target.tagName === "A" ||
-                target.tagName === "BUTTON" ||
-                target.closest("a") ||
-                target.closest("button")
-            ) {
-                setHoverState("hover");
-            } else {
-                setHoverState("default");
-            }
-        };
-
-        // Passive event listeners prevent main-thread scrolling blocks
-        window.addEventListener("mousemove", handleMouseMove, { passive: true });
-        window.addEventListener("mouseover", handleMouseOver, { passive: true });
-
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseover", handleMouseOver);
-        };
-    }, [mouseX, mouseY]);
-
-    const variants: import("framer-motion").Variants = {
-        default: {
-            scale: 1,
-            opacity: 0.5,
-            mixBlendMode: "difference",
-            backgroundColor: "white",
-            border: "0px solid transparent",
-            width: "16px",
-            height: "16px",
-            transition: { duration: 0.15 }
-        },
-        hover: {
-            scale: 1,
-            opacity: 1,
-            backgroundColor: "transparent",
-            border: "1px solid #FFFFFF",
-            mixBlendMode: "normal",
-            width: "48px",
-            height: "48px",
-            transition: { duration: 0.15 }
-        },
-        expand: {
-            // Solid black dot, always visible on white nav
-            scale: 1,
-            opacity: 1,
-            backgroundColor: "#080808",
-            border: "0px solid transparent",
-            mixBlendMode: "normal",
-            width: "60px",
-            height: "60px",
-            transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
-        },
-        hidden: {
-            scale: 0,
-            opacity: 0,
-            transition: { duration: 0.1 }
-        }
+    const updateMousePosition = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+      if (!isVisible) setIsVisible(true);
     };
 
-    return (
-        <>
-            {/* Force hide the native OS cursor everywhere */}
-            <style dangerouslySetInnerHTML={{ __html: `* { cursor: none !important; }` }} />
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      const isProject = target.closest("[data-cursor='project']");
+      if (isProject) {
+        setCursorVariant("project");
+        setIsHovering(false);
+        return;
+      }
+      
+      setCursorVariant("default");
+      const isInteractive = target.closest("a, button, input, [role='button']");
+      setIsHovering(!!isInteractive);
+    };
 
-            <motion.div
-                className="fixed top-0 left-0 rounded-full pointer-events-none z-[99999]"
-                variants={variants}
-                animate={hoverState}
-                style={{
-                    x: mouseX,
-                    y: mouseY,
-                    // By shifting center 50% up and left natively, we don't need to manually map -8 or -24 bounds!
-                    translateX: "-50%",
-                    translateY: "-50%",
-                }}
-            />
-        </>
-    );
+    const handleMouseOut = () => {
+      setIsHovering(false);
+      setCursorVariant("default");
+    };
+
+    window.addEventListener("mousemove", updateMousePosition);
+    window.addEventListener("mouseover", handleMouseOver);
+    window.addEventListener("mouseout", handleMouseOut);
+
+    return () => {
+      window.removeEventListener("mousemove", updateMousePosition);
+      window.removeEventListener("mouseover", handleMouseOver);
+      window.removeEventListener("mouseout", handleMouseOut);
+    };
+  }, [isVisible]);
+
+  if (!isVisible) return null;
+
+  const isProject = cursorVariant === "project";
+  const size = isProject ? 80 : (isHovering ? 48 : 12);
+  const offset = size / 2;
+
+  return (
+    <motion.div
+      className="fixed top-0 left-0 z-[99999] pointer-events-none rounded-full mix-blend-difference"
+      animate={{
+        x: mousePosition.x - offset,
+        y: mousePosition.y - offset,
+        width: size,
+        height: size,
+        backgroundColor: isProject ? "transparent" : "#ffffff",
+        border: isProject ? "1px solid #C9A96E" : "0px solid transparent",
+        opacity: isHovering ? 0.6 : (isProject ? 1 : 1),
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 800,
+        damping: 40,
+        mass: 0.5,
+      }}
+    />
+  );
 }

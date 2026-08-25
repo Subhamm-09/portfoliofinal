@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTheme } from "@/hooks/useTheme";
 
 export default function GoldenTrail() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const { isDark } = useTheme();
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -14,6 +16,9 @@ export default function GoldenTrail() {
 
         let width = 0;
         let height = 0;
+
+        // Colors
+        const rgb = isDark ? "201, 169, 110" : "184, 68, 90";
 
         // Trail physics configuration
         const trailLength = 80;
@@ -87,7 +92,7 @@ export default function GoldenTrail() {
 
                 // Luxurious glowing aura
                 ctx.shadowBlur = 25;
-                ctx.shadowColor = "rgba(201, 169, 110, 0.6)";
+                ctx.shadowColor = `rgba(${rgb}, 0.6)`;
 
                 for (let i = 0; i < trailLength - 1; i++) {
                     const p1 = trail[i];
@@ -97,11 +102,11 @@ export default function GoldenTrail() {
                     const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
                     // Only draw visible moving segments to prevent artifacting when still
                     if (dist > 0.05) {
-                        // Core golden aura
+                        // Core aura
                         ctx.beginPath();
                         ctx.moveTo(p1.x, p1.y);
                         ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(201, 169, 110, ${ratio * 0.6})`;
+                        ctx.strokeStyle = `rgba(${rgb}, ${ratio * 0.6})`;
                         ctx.lineWidth = 5 * ratio + 1;
                         ctx.stroke();
 
@@ -126,7 +131,7 @@ export default function GoldenTrail() {
             window.removeEventListener("mousemove", onMouseMove);
             cancelAnimationFrame(animationFrameId);
         };
-    }, []);
+    }, [isDark]);
 
     return (
         <canvas

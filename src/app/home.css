@@ -32,13 +32,7 @@
     animation: hero-float 18s ease-in-out infinite;
 }
 
-@keyframes grain-shift {
-    0%, 100% { transform: translate(0, 0); }
-    25%       { transform: translate(-1%, 1%); }
-    50%       { transform: translate(1%, -1%); }
-    75%       { transform: translate(-1%, -1%); }
-}
-
 .grain-overlay {
-    animation: grain-shift 0.5s steps(1) infinite;
+    /* Static grain overlay - no translate jitter to prevent edge flickering */
+    will-change: auto;
 }

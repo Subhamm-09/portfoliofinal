@@ -11,18 +11,13 @@ interface ArtifactConfig {
 }
 
 const INSTALLATION: ArtifactConfig[] = [
-  { id: "01", image: "/pic (1).jpeg", category: "OPERATION: DOOMSDAY" },
-  { id: "02", image: "/pic (2).jpeg", category: "MADVILLAINY" },
-  { id: "03", image: "/pic (3).jpeg", category: "MM..FOOD" },
-  { id: "04", image: "/pic (4).jpeg", category: "VIKTOR VAUGHN" },
-  { id: "05", image: "/pic (5).jpeg", category: "KING GEEDORAH" },
-  { id: "06", image: "/pic (6).jpeg", category: "METAL FACE" },
-  { id: "07", image: "/pic (7).jpeg", category: "THE MOUSE & THE MASK" },
-  { id: "08", image: "/pic (8).jpeg", category: "BORN LIKE THIS" },
-  { id: "09", image: "/pic (9).jpeg", category: "CZARFACE MEETS METAL FACE" },
-  { id: "10", image: "/pic (10).jpeg", category: "SUPERVILLAIN" },
-  { id: "11", image: "/pic (1).jpeg", category: "DOOMSDAY" },
-  { id: "12", image: "/pic (2).jpeg", category: "THE ILLUSION OF TIME" },
+  { id: "01", image: "/portpics/IMG_0386-1.jpg.jpeg", category: "MADVILLAINY" },
+  { id: "02", image: "/portpics/IMG_0465-1.jpg.jpeg", category: "OPERATION: DOOMSDAY" },
+  { id: "03", image: "/portpics/IMG_0727.jpeg", category: "MM..FOOD" },
+  { id: "04", image: "/portpics/IMG_2012.jpeg", category: "VIKTOR VAUGHN" },
+  { id: "05", image: "/portpics/IMG_2013.jpeg", category: "KING GEEDORAH" },
+  { id: "06", image: "/portpics/fotor_2026-08-27_00-22-25.jpeg", category: "METAL FACE" },
+  { id: "07", image: "/portpics/pic (5).jpeg", category: "THE MOUSE & THE MASK" },
 ];
 
 export default function MonolithicScroll({ onClose }: { onClose: () => void }) {

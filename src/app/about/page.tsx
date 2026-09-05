@@ -474,13 +474,14 @@ export default function AboutEditorial() {
           <div 
             data-lenis-prevent="true"
             data-lenis-prevent-wheel="true"
-            className="fixed inset-0 z-[99999] w-screen h-screen overflow-y-auto overflow-x-hidden bg-[#030202]"
+            className="fixed inset-0 z-[99999] w-screen h-screen overflow-hidden bg-[#030202]"
           >
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full h-full"
             >
               <MonolithicScroll onClose={() => setIsArchiveOpen(false)} />
             </motion.div>

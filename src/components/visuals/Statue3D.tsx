@@ -87,13 +87,9 @@ function StatueModel() {
     };
   }, [clonedDark, clonedLight, nativeMaterial, nativeLightMaterial]);
 
-  useFrame((state, delta) => {
-    const pointerX = state.pointer.x;
-    const pointerY = state.pointer.y;
-    
-    const baseRotY = Math.sin(state.clock.elapsedTime * 0.3) * (Math.PI / 6);
-    const targetRotY = baseRotY + pointerX * 0.8;
-    const targetRotX = -pointerY * 0.4;
+  useFrame((_state, delta) => {
+    // Smooth continuous rotation purely on its own vertical axis (Y-axis), immune to scroll or cursor position
+    const rotSpeed = 0.25;
     
     const targetOpacityDark = isDark ? 1 : 0;
     const targetOpacityLight = isDark ? 0 : 1;
@@ -104,8 +100,8 @@ function StatueModel() {
     nativeLightMaterial.opacity = targetOpacityLight;
 
     if (darkGroupRef.current) {
-      darkGroupRef.current.rotation.y = THREE.MathUtils.lerp(darkGroupRef.current.rotation.y, targetRotY, delta * 3);
-      darkGroupRef.current.rotation.x = THREE.MathUtils.lerp(darkGroupRef.current.rotation.x, targetRotX, delta * 3);
+      darkGroupRef.current.rotation.y += delta * rotSpeed;
+      darkGroupRef.current.rotation.x = 0;
       
       darkGroupRef.current.position.y = 0.15;
       const sDark = THREE.MathUtils.lerp(darkGroupRef.current.scale.x, targetScaleDark, delta * 4);
@@ -115,8 +111,8 @@ function StatueModel() {
     }
     
     if (lightGroupRef.current) {
-      lightGroupRef.current.rotation.y = THREE.MathUtils.lerp(lightGroupRef.current.rotation.y, targetRotY, delta * 3);
-      lightGroupRef.current.rotation.x = THREE.MathUtils.lerp(lightGroupRef.current.rotation.x, targetRotX, delta * 3);
+      lightGroupRef.current.rotation.y += delta * rotSpeed;
+      lightGroupRef.current.rotation.x = 0;
 
       lightGroupRef.current.position.y = -0.3;
       const sLight = THREE.MathUtils.lerp(lightGroupRef.current.scale.x, targetScaleLight, delta * 4);

@@ -13,10 +13,9 @@ import {
   type Variants,
 } from "framer-motion";
 import "./home.css";
-import Preloader from "@/components/layout/Preloader";
+import Preloader, { hasPreloaderPlayed } from "@/components/layout/Preloader";
 import { useTheme } from "@/hooks/useTheme";
 import dynamic from "next/dynamic";
-import EdgeSection from "@/components/sections/EdgeSection";
 import { PROJECTS } from "@/data/projects";
 
 const Statue3D = dynamic(() => import("@/components/visuals/Statue3D"), { ssr: false });
@@ -71,7 +70,7 @@ const DARK = {
   goldMuted: "rgba(201,163,74,0.6)",
   goldGlow:  "rgba(201,163,74,0.07)",
   statueGlow:"radial-gradient(ellipse at center, rgba(201,163,74,0.2) 0%, rgba(201,163,74,0.08) 35%, transparent 75%)",
-  watermark: "rgba(231,226,216,0.75)",
+  watermark: "rgba(201,163,74,0.75)",
   border:    "rgba(231,226,216,0.07)",
   footerImg: 0.18,
   imgFilter: "none",
@@ -88,7 +87,7 @@ const LIGHT = {
   goldMuted: "rgba(184,68,90,0.60)",
   goldGlow:  "rgba(184,68,90,0.12)",
   statueGlow:"radial-gradient(ellipse at center, rgba(184,68,90,0.40) 0%, rgba(184,68,90,0.18) 30%, rgba(184,68,90,0.06) 60%, transparent 80%)",
-  watermark: "rgba(0,0,0,0.72)",
+  watermark: "rgba(184,68,90,0.72)",
   border:    "rgba(10,10,10,0.09)",
   footerImg: 0.12,
   imgFilter: "none",
@@ -316,9 +315,21 @@ function WorkCard({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(() => !hasPreloaderPlayed());
   const [isModelLoaded, setIsModelLoaded] = useState(false);
-  const handlePreloaderComplete = useCallback(() => setIsLoading(false), []);
+  
+  useEffect(() => {
+    if (hasPreloaderPlayed()) {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handlePreloaderComplete = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.__PRELOADER_PLAYED__ = true;
+    }
+    setIsLoading(false);
+  }, []);
   const { isDark } = useTheme();
 
   const t = isDark ? DARK : LIGHT;
@@ -342,8 +353,6 @@ export default function Home() {
   const statueY       = useTransform(heroScroll, [0, 1], ["0%", "25%"]);
   const statueScale   = useTransform(heroScroll, [0, 0.6, 1], [1, 0.98, 0.96]);
   const statueOpacity = useTransform(heroScroll, [0, 0.5, 0.85], [1, 1, 0]);
-  const statueRotateY = useTransform(heroScroll, [0, 1], [0, -3]);
-  const statueRotateX = useTransform(heroScroll, [0, 1], [0, 1.5]);
 
   // Layer 3 — Orbit ring (independent tilt & fade)
   const orbitY       = useTransform(heroScroll, [0, 1], ["-50%", "-35%"]);
@@ -368,8 +377,6 @@ export default function Home() {
   const s_heroEngineeringY = useSpring(heroEngineeringY, textSpring);
   const s_statueY          = useSpring(statueY, statueSpring);
   const s_statueScale      = useSpring(statueScale, statueSpring);
-  const s_statueRotateY    = useSpring(statueRotateY, statueSpring);
-  const s_statueRotateX    = useSpring(statueRotateX, statueSpring);
   const s_orbitY           = useSpring(orbitY, orbitSpring);
   const s_orbitRotate      = useSpring(orbitRotate, orbitSpring);
 
@@ -476,7 +483,7 @@ export default function Home() {
           {/* Statue and Effects */}
           <motion.div
             className="absolute inset-0 z-10 pointer-events-none"
-            style={{ y: s_statueY, scale: s_statueScale, opacity: statueOpacity, rotateY: s_statueRotateY, rotateX: s_statueRotateX }}
+            style={{ y: s_statueY, scale: s_statueScale, opacity: statueOpacity }}
             initial={{ y: 24, opacity: 0, scale: 0.96 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             transition={{ duration: 1.8, ease: expo, delay: 0.4 }}
@@ -627,8 +634,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── MY EDGE ───────────────────────────────────────────────────────── */}
-        <EdgeSection />
 
         {/* ── FOOTER ────────────────────────────────────────────────────────── */}
         <footer

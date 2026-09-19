@@ -230,10 +230,12 @@ export default function AboutEditorial() {
             
             {/* Massive Staggered Typography */}
             <motion.div 
-              className="flex flex-col relative z-10"
+              className="flex flex-col relative z-10 cursor-pointer"
               initial={{ opacity: 0, y: 50 }}
               animate={hasEntered ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
               transition={{ duration: 1.5, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ scale: 1.04, rotate: -1.5, transition: { type: "spring", stiffness: 400, damping: 12 } }}
+              whileTap={{ scale: 0.96, rotate: 1, transition: { type: "spring", stiffness: 500, damping: 15 } }}
             >
               <h1 className="font-serif text-[12vw] md:text-[10vw] leading-[0.8] tracking-tighter uppercase font-light ml-0 md:ml-12" style={{ color: textPrimary }}>
                 Digital

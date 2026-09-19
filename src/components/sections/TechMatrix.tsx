@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Icons
 import { 
@@ -33,21 +33,18 @@ const BADGE_COLORS = {
     bg: "bg-[#d4af37]/10", 
     border: "border-[#d4af37]/35", 
     text: "text-[#d4af37]", 
-    glow: "shadow-[0_0_10px_rgba(212,175,55,0.25)]",
     label: "Primary Stack" 
   },
   Proficient: { 
     bg: "bg-[#818cf8]/10", 
     border: "border-[#818cf8]/35", 
     text: "text-[#818cf8]", 
-    glow: "shadow-[0_0_10px_rgba(129,140,248,0.25)]",
     label: "Proficient" 
   },
   Familiar: { 
     bg: "bg-[#34d399]/10", 
     border: "border-[#34d399]/35", 
     text: "text-[#34d399]", 
-    glow: "shadow-[0_0_10px_rgba(52,211,153,0.25)]",
     label: "Familiar" 
   }
 };
@@ -116,129 +113,48 @@ const SKILLS: Skill[] = [
   { name: "System Design", category: "06 — CORE COMPUTER SCIENCE", icon: <MdAccountTree />, desc: "Scalability, client-server models, caching tiers, load balancing, and rate limiting.", level: "Proficient" }
 ];
 
-const DEVELOPER_TOOLS = [
-  "Git", "GitHub", "Docker", "VS Code", "Jupyter Notebook", "Google Colab", "Postman", "Figma"
-];
 
 // --- Sub-components ---
 
-const MouseGlow = ({ isDark }: { isDark: boolean }) => {
-  const glowRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || window.matchMedia("(pointer: coarse)").matches) return;
-
-    let rafId: number = 0;
-    let targetX = -600;
-    let targetY = -600;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      targetX = e.clientX;
-      targetY = e.clientY;
-      if (!rafId) {
-        rafId = requestAnimationFrame(() => {
-          if (glowRef.current) {
-            glowRef.current.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
-          }
-          rafId = 0;
-        });
-      }
-    };
-
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, []);
-
-  const rgb = isDark ? "212, 175, 55" : "184, 68, 90";
-
-  return (
-    <div
-      ref={glowRef}
-      className="pointer-events-none fixed top-0 left-0 -ml-[300px] -mt-[300px] w-[600px] h-[600px] rounded-full z-0 transition-opacity duration-500"
-      style={{
-        background: `radial-gradient(circle at center, rgba(${rgb}, 0.035) 0%, transparent 60%)`,
-        willChange: "transform",
-      }}
-    />
-  );
-};
-
 const SkillCard = ({ skill, index, isDark }: { skill: Skill; index: number; isDark: boolean }) => {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
-  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["6deg", "-6deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-6deg", "6deg"]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   const badge = (skill?.level && BADGE_COLORS[skill.level]) ? BADGE_COLORS[skill.level] : BADGE_COLORS.Primary;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.4, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
-      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className={`relative group ${isDark ? "bg-[#090909]/80 border-white/5" : "bg-white/60 border-black/5"} backdrop-blur-md border rounded-2xl p-6 flex flex-col justify-between h-[270px] overflow-hidden ${isDark ? "hover:border-[#d4af37]/30" : "hover:border-[#B8445A]/30"} transition-colors duration-500`}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.35, delay: index * 0.03, ease: [0.16, 1, 0.3, 1] }}
+      className={`relative group ${isDark ? "bg-[#111110] border-white/10 hover:border-[#d4af37]/40" : "bg-[#FAF9F5] border-black/10 hover:border-[#B8445A]/40"} border rounded-xl p-6 flex flex-col justify-between h-[260px] transition-colors duration-300`}
     >
-      {/* Internal hover glow */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${isDark ? "from-[#d4af37]/0 via-[#d4af37]/[0.03]" : "from-[#B8445A]/0 via-[#B8445A]/[0.03]"} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
-
       {/* Top Section */}
-      <div className="z-10 flex justify-between items-start mb-4" style={{ transform: "translateZ(25px)" }}>
-        <div className={`w-11 h-11 ${isDark ? "bg-black/50 border-white/10" : "bg-white/50 border-black/10"} rounded-xl border flex items-center justify-center shrink-0 ${isDark ? "group-hover:border-[#d4af37]/40 group-hover:shadow-[0_0_15px_rgba(212,175,55,0.15)]" : "group-hover:border-[#B8445A]/40 group-hover:shadow-[0_0_15px_rgba(184,68,90,0.15)]"} transition-all duration-500`}>
-          <div className={`text-2xl ${isDark ? "text-white/70" : "text-black/70"} ${isDark ? "group-hover:text-[#d4af37]" : "group-hover:text-[#B8445A]"} transition-colors duration-500`}>
+      <div className="flex justify-between items-start mb-4">
+        <div className={`w-10 h-10 ${isDark ? "bg-white/[0.04] border-white/10" : "bg-black/[0.04] border-black/10"} rounded-lg border flex items-center justify-center shrink-0 ${isDark ? "group-hover:border-[#d4af37]/40" : "group-hover:border-[#B8445A]/40"} transition-colors duration-300`}>
+          <div className={`text-xl ${isDark ? "text-white/70 group-hover:text-[#d4af37]" : "text-black/70 group-hover:text-[#B8445A]"} transition-colors duration-300`}>
             {skill.icon}
           </div>
         </div>
-        <div className={`px-2.5 py-1 rounded-md border text-[9px] font-mono uppercase tracking-widest flex items-center gap-1.5 transition-all duration-300 ${badge.bg} ${badge.border} ${badge.text} ${badge.glow}`}>
+        <div className={`px-2.5 py-1 rounded border text-[9px] font-mono uppercase tracking-widest flex items-center gap-1.5 transition-colors duration-300 ${badge.bg} ${badge.border} ${badge.text}`}>
           <div className="w-1 h-1 rounded-full bg-current" />
           {skill?.level || "Primary"}
         </div>
       </div>
 
       {/* Middle Section */}
-      <div className="z-10 flex-1" style={{ transform: "translateZ(30px)" }}>
-        <h3 className={`text-xl font-bold tracking-tight ${isDark ? "text-white/90 group-hover:text-white" : "text-black/90 group-hover:text-black"} transition-colors mb-2`}>
+      <div className="flex-1">
+        <h3 className={`text-lg font-medium tracking-tight ${isDark ? "text-white/90" : "text-black/90"} mb-2`}>
           {skill.name}
         </h3>
-        <p className={`text-xs ${isDark ? "text-white/50" : "text-black/55"} leading-relaxed font-light line-clamp-3`}>
+        <p className={`text-xs ${isDark ? "text-white/50" : "text-black/60"} leading-relaxed font-light line-clamp-3`}>
           {skill.desc}
         </p>
       </div>
 
       {/* Bottom Section */}
-      <div className="z-10 mt-4 pt-3 border-t" style={{ transform: "translateZ(15px)", borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
-        <div className="flex items-center">
-          <span className={`text-[9px] font-mono ${isDark ? "text-white/30" : "text-black/30"} uppercase tracking-[0.2em]`}>
-            {skill.category.split(" — ")[1] || skill.category}
-          </span>
-        </div>
+      <div className="mt-4 pt-3 border-t flex items-center justify-between" style={{ borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)" }}>
+        <span className={`text-[9px] font-mono ${isDark ? "text-white/30" : "text-black/30"} uppercase tracking-[0.2em]`}>
+          {skill.category.split(" — ")[1] || skill.category}
+        </span>
       </div>
     </motion.div>
   );
@@ -252,27 +168,18 @@ export default function TechMatrix({ isDark = true }: { isDark?: boolean }) {
   const filteredSkills = SKILLS.filter(skill => skill.category === activeTab);
 
   return (
-    <section className={`relative w-full min-h-screen ${isDark ? "bg-[#090909] text-white" : "bg-transparent text-black"} overflow-hidden flex flex-col items-center pt-24 pb-32 transition-colors duration-1000`}>
+    <section className={`relative w-full min-h-screen ${isDark ? "bg-[#090909] text-white" : "bg-transparent text-black"} overflow-hidden flex flex-col items-center pt-24 pb-32 transition-colors duration-700`}>
       
-      {/* Background Grid & Ambient Glow */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" 
-           style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`, backgroundSize: '40px 40px' }} 
-      />
-      <div className="absolute inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none" />
-      <div className={`absolute inset-0 z-0 ${isDark ? "bg-gradient-to-b from-[#090909] via-transparent to-[#090909]" : "bg-gradient-to-b from-[#F4F2EC] via-transparent to-[#F4F2EC]"} pointer-events-none transition-colors duration-1000`} />
-      
-      <MouseGlow isDark={isDark} />
-
       <div className="w-full max-w-[1400px] px-6 md:px-12 relative z-10">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8 pb-8 border-b" style={{ borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)" }}>
           <div>
-            <span className={`text-[11px] font-mono uppercase tracking-[0.35em] block mb-3 ${isDark ? "text-[#d4af37]" : "text-[#B8445A]"}`}>
-              Capabilities &bull; Stack
+            <span className={`text-[10px] font-mono uppercase tracking-[0.35em] block mb-3 ${isDark ? "text-[#d4af37]" : "text-[#B8445A]"}`}>
+              Capabilities &bull; Inventory
             </span>
-            <h1 className={`text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.9] mb-4 text-transparent bg-clip-text ${isDark ? "bg-gradient-to-br from-white via-white/90 to-white/30" : "bg-gradient-to-br from-black via-black/90 to-black/30"}`}>
-              ENGINEERING STACK.
+            <h1 className={`text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[0.95] mb-4 ${isDark ? "text-white" : "text-black"}`}>
+              ENGINEERING STACK
             </h1>
             <p className={`text-sm md:text-base font-light max-w-xl ${isDark ? "text-white/50" : "text-black/60"} leading-relaxed`}>
               Technologies and computer science foundations I use to build software, intelligent systems, and interactive digital experiences.
@@ -285,11 +192,10 @@ export default function TechMatrix({ isDark = true }: { isDark?: boolean }) {
             download="Subham_Resume_Updated.docx"
             target="_blank"
             rel="noopener noreferrer"
-            className={`group relative inline-flex items-center justify-center px-8 py-4 font-mono text-xs uppercase tracking-widest overflow-hidden rounded-full border transition-all duration-300 w-max shrink-0 ${isDark ? "bg-[#111] border-white/10 hover:border-[#d4af37]/50" : "bg-white border-black/10 hover:border-[#B8445A]/50"}`}
+            className={`group relative inline-flex items-center justify-center px-7 py-3.5 font-mono text-xs uppercase tracking-widest rounded border transition-all duration-300 w-max shrink-0 ${isDark ? "bg-transparent border-white/15 hover:border-[#d4af37] hover:text-[#d4af37]" : "bg-transparent border-black/15 hover:border-[#B8445A] hover:text-[#B8445A]"}`}
           >
-            <span className={`absolute inset-0 bg-gradient-to-r ${isDark ? "from-[#d4af37]/0 via-[#d4af37]/10 to-[#d4af37]/0" : "from-[#B8445A]/0 via-[#B8445A]/10 to-[#B8445A]/0"} translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out`} />
             <span className={`relative flex items-center gap-3 ${isDark ? "text-white/70" : "text-black/70"} ${isDark ? "group-hover:text-[#d4af37]" : "group-hover:text-[#B8445A]"} transition-colors`}>
-              <FiDownload className="text-lg" />
+              <FiDownload className="text-base" />
               Download Resume
             </span>
           </a>
@@ -304,23 +210,16 @@ export default function TechMatrix({ isDark = true }: { isDark?: boolean }) {
                 <button
                   key={cat}
                   onClick={() => setActiveTab(cat)}
-                  className={`relative px-5 py-2.5 rounded-full border text-[10px] md:text-xs font-mono uppercase tracking-widest transition-all duration-500 ${
+                  className={`relative px-4 py-2 rounded border text-[10px] md:text-[11px] font-mono uppercase tracking-widest transition-all duration-300 ${
                     isActive 
-                      ? isDark ? "border-[#d4af37]/50 text-[#d4af37] bg-[#d4af37]/5" : "border-[#B8445A]/50 text-[#B8445A] bg-[#B8445A]/5" 
-                      : isDark ? "border-white/5 text-white/40 hover:text-white/80 hover:border-white/20 hover:bg-white/5" : "border-black/5 text-black/40 hover:text-black/80 hover:border-black/20 hover:bg-black/5"
+                      ? isDark ? "border-[#d4af37] text-[#d4af37] bg-[#d4af37]/5" : "border-[#B8445A] text-[#B8445A] bg-[#B8445A]/5" 
+                      : isDark ? "border-white/10 text-white/40 hover:text-white/80 hover:border-white/20" : "border-black/10 text-black/40 hover:text-black/80 hover:border-black/20"
                   }`}
                 >
                   <span className="relative z-10 flex items-center gap-2">
-                    {isActive && <span className={`w-1.5 h-1.5 rounded-full ${isDark ? "bg-[#d4af37] shadow-[0_0_8px_rgba(212,175,55,0.8)]" : "bg-[#B8445A] shadow-[0_0_8px_rgba(184,68,90,0.8)]"}`} />}
+                    {isActive && <span className={`w-1.5 h-1.5 rounded-full ${isDark ? "bg-[#d4af37]" : "bg-[#B8445A]"}`} />}
                     {cat}
                   </span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeStackTab"
-                      className={`absolute inset-0 border ${isDark ? "border-[#d4af37]" : "border-[#B8445A]"} rounded-full pointer-events-none`}
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
                 </button>
               );
             })}
@@ -341,41 +240,6 @@ export default function TechMatrix({ isDark = true }: { isDark?: boolean }) {
           </motion.div>
         </div>
 
-        {/* Legend & Developer Tools Ribbon */}
-        <div className="mt-20 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-8" style={{ borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)" }}>
-          
-          {/* Proficiency Legend */}
-          <div className="flex flex-wrap gap-6 items-center text-[10px] font-mono tracking-widest uppercase">
-            {Object.entries(BADGE_COLORS).map(([level, colors]) => (
-              <div key={level} className="flex items-center gap-2.5">
-                <div className={`px-2 py-0.5 rounded border ${colors.bg} ${colors.border} ${colors.text} flex items-center gap-1.5`}>
-                  <div className="w-1 h-1 rounded-full bg-current" />
-                  {level}
-                </div>
-                <span className={isDark ? "text-white/35" : "text-black/40"}>
-                  {level === "Primary" ? "Core Daily Driver" :
-                   level === "Proficient" ? "Deep Working Knowledge" : "Familiar & Applied"}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Tools Ribbon */}
-          <div className="flex items-center gap-3 text-[10px] font-mono tracking-wider uppercase">
-            <span className={isDark ? "text-white/30" : "text-black/35"}>Tools:</span>
-            <div className="flex flex-wrap gap-1.5">
-              {DEVELOPER_TOOLS.map((tool) => (
-                <span 
-                  key={tool} 
-                  className={`px-2.5 py-1 rounded-md border text-[9px] ${isDark ? "bg-white/[0.03] border-white/10 text-white/60" : "bg-black/[0.03] border-black/10 text-black/60"}`}
-                >
-                  {tool}
-                </span>
-              ))}
-            </div>
-          </div>
-
-        </div>
 
       </div>
 

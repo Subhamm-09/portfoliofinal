@@ -125,26 +125,26 @@ export default function CursorTrackingMask({ className = "", isDark = false }: C
       {/* Pupils are rendered first so they sit behind the image */}
       <div 
         ref={leftPupilRef}
-        className={`absolute w-[20px] h-[20px] md:w-[24px] md:h-[24px] rounded-full blur-[0.5px] -z-10 transition-colors duration-1000 ${isDark ? "bg-[#EAE7DF] shadow-[0_0_12px_rgba(234,231,223,0.3)]" : "bg-[#050505]"}`}
+        className={`absolute w-[22px] h-[22px] md:w-[26px] md:h-[26px] rounded-full -z-10 transition-colors duration-700 ${isDark ? "bg-white" : "bg-[#050505]"}`}
         style={{
           left: `${EYE_POSITIONS.left.x * 100}%`,
           top: `${EYE_POSITIONS.left.y * 100}%`,
           transform: 'translate(-50%, -50%)'
         }}
       >
-        <div className={`absolute top-[25%] left-[25%] w-[25%] h-[25%] rounded-full blur-[0.5px] ${isDark ? "bg-black/30" : "bg-white/10"}`} />
+        <div className={`absolute top-[25%] left-[25%] w-[25%] h-[25%] rounded-full ${isDark ? "bg-white" : "bg-white/20"}`} />
       </div>
 
       <div 
         ref={rightPupilRef}
-        className={`absolute w-[20px] h-[20px] md:w-[24px] md:h-[24px] rounded-full blur-[0.5px] -z-10 transition-colors duration-1000 ${isDark ? "bg-[#EAE7DF] shadow-[0_0_12px_rgba(234,231,223,0.3)]" : "bg-[#050505]"}`}
+        className={`absolute w-[22px] h-[22px] md:w-[26px] md:h-[26px] rounded-full -z-10 transition-colors duration-700 ${isDark ? "bg-white" : "bg-[#050505]"}`}
         style={{
           left: `${EYE_POSITIONS.right.x * 100}%`,
           top: `${EYE_POSITIONS.right.y * 100}%`,
           transform: 'translate(-50%, -50%)'
         }}
       >
-        <div className={`absolute top-[25%] left-[25%] w-[25%] h-[25%] rounded-full blur-[0.5px] ${isDark ? "bg-black/30" : "bg-white/10"}`} />
+        <div className={`absolute top-[25%] left-[25%] w-[25%] h-[25%] rounded-full ${isDark ? "bg-white" : "bg-white/20"}`} />
       </div>
 
       {/* Mask Image rendered on top */}

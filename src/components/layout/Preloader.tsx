@@ -6,6 +6,17 @@ import { motion, AnimatePresence } from "framer-motion";
 const power4Out: [number, number, number, number] = [0.25, 1, 0.5, 1];
 const power4In: [number, number, number, number] = [0.895, 0.03, 0.685, 0.22];
 
+declare global {
+    interface Window {
+        __PRELOADER_PLAYED__?: boolean;
+    }
+}
+
+export function hasPreloaderPlayed(): boolean {
+    if (typeof window === "undefined") return false;
+    return Boolean(window.__PRELOADER_PLAYED__);
+}
+
 interface PreloaderProps {
     onComplete: () => void;
     isReady?: boolean;
@@ -13,29 +24,38 @@ interface PreloaderProps {
 
 export default function Preloader({ onComplete, isReady = true }: PreloaderProps) {
     const [lifting, setLifting] = useState(false);
-    const [gone, setGone] = useState(false);
+    const [gone, setGone] = useState(() => hasPreloaderPlayed());
     const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 
     useEffect(() => {
-        // Simple synthetic delay to ensure a minimum screen time of 2.2s
+        if (hasPreloaderPlayed()) {
+            onComplete();
+            return;
+        }
+
+        // Minimum screen time of 2.2s for first visit/hard refresh
         const timer = setTimeout(() => {
             setMinTimeElapsed(true);
         }, 2200);
         return () => clearTimeout(timer);
-    }, []);
+    }, [onComplete]);
 
     useEffect(() => {
+        if (hasPreloaderPlayed()) return;
         if (minTimeElapsed && isReady) {
             setLifting(true);
         }
     }, [minTimeElapsed, isReady]);
 
     const handleLiftComplete = () => {
+        if (typeof window !== "undefined") {
+            window.__PRELOADER_PLAYED__ = true;
+        }
         setGone(true);
         onComplete();
     };
 
-    if (gone) return null;
+    if (gone || hasPreloaderPlayed()) return null;
 
     return (
         <AnimatePresence>
@@ -47,7 +67,7 @@ export default function Preloader({ onComplete, isReady = true }: PreloaderProps
                     animate={lifting ? { opacity: 0 } : { opacity: 1 }}
                     transition={
                         lifting
-                            ? { duration: 1.2, ease: power4In, delay: 0.3 } // Wait for text to fade first
+                            ? { duration: 1.2, ease: power4In, delay: 0.3 }
                             : { duration: 0 }
                     }
                     onAnimationComplete={lifting ? handleLiftComplete : undefined}

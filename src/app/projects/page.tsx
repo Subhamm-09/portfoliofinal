@@ -1,16 +1,103 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useInView, type Variants } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { Julius_Sans_One } from "next/font/google";
 import GoldenTrail from "@/components/visuals/GoldenTrail";
 import { useTheme } from "@/hooks/useTheme";
 import SelectedExperience from "@/components/sections/SelectedExperience";
 import ProjectsTriptych from "@/components/sections/ProjectsTriptych";
 
+const julius = Julius_Sans_One({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-julius",
+});
+
+// ─── Easing & Motion Variants ────────────────────────────────────────────────
+const expo: [number, number, number, number] = [0.16, 1, 0.3, 1];
+const gentle: [number, number, number, number] = [0.4, 0, 0.2, 1];
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0, transition: { duration: 1.1, ease: expo } },
+};
+
+const fadeIn: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 1.4, ease: gentle } },
+};
+
+const stagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.15, delayChildren: 0.1 } },
+};
+
+const letterVariant: Variants = {
+  hidden: { opacity: 0, y: "110%", skewY: 5 },
+  visible: { opacity: 1, y: 0, skewY: 0, transition: { duration: 0.85, ease: expo } },
+};
+
+// ─── SplitText ────────────────────────────────────────────────────────────────
+function SplitText({ text, className }: { text: string; className?: string }) {
+  return (
+    <span className={`inline-flex overflow-hidden ${className ?? ""}`} aria-label={text}>
+      {text.split("").map((ch, i) => (
+        <motion.span
+          key={i}
+          variants={letterVariant}
+          style={{ display: "inline-block", whiteSpace: ch === " " ? "pre" : "normal" }}
+        >
+          {ch}
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
+// ─── Reveal ───────────────────────────────────────────────────────────────────
+function Reveal({
+  children,
+  variants = fadeUp,
+  className,
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  variants?: Variants;
+  className?: string;
+  delay?: number;
+}) {
+  return (
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      variants={variants}
+      transition={{ delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+const DARK_FOOTER = {
+  bg:        "#10100F",
+  text:      "#E7E2D8",
+  textSub:   "#8D8A82",
+  textMuted: "rgba(231,226,216,0.32)",
+  gold:      "#C9A34A",
+  watermark: "rgba(201,163,74,0.75)",
+  border:    "rgba(231,226,216,0.07)",
+  footerImg: 0.18,
+};
+
 export default function UnifiedProjectsPage() {
     const { isDark } = useTheme();
+    const footerRef = useRef<HTMLDivElement>(null);
+    const footerInView = useInView(footerRef, { once: true, margin: "-100px" });
 
     const t = isDark 
       ? { bg: "#080808", text: "#fdfdfd", gold: "#C9A96E", border: "rgba(255,255,255,0.1)", textSub: "#8a8a8a", textMuted: "#4a4a4a" }
@@ -92,7 +179,7 @@ export default function UnifiedProjectsPage() {
         }
       `}</style>
 
-            <div className="unified-projects">
+            <div className={`${julius.variable} unified-projects`}>
                 <main>
                     {/* Intro Section */}
                     <section className="hero-section">
@@ -135,24 +222,67 @@ export default function UnifiedProjectsPage() {
                         <ProjectsTriptych isDark={isDark} t={t} />
                     </div>
 
-                    {/* Footer Section Space */}
-                    <section className="h-[60vh] md:h-[80vh] flex items-center justify-center relative z-10 border-t" style={{ borderColor: t.border }}>
-                        <div className="text-center px-6">
-                            <p className="font-serif text-3xl md:text-5xl lg:text-7xl mb-8 opacity-85">
-                                Let&apos;s build something <br />
-                                <span className="italic" style={{ color: "var(--gold)" }}>extraordinary.</span>
-                            </p>
-                            <Link
-                                href="mailto:subhamprojects99@gmail.com"
-                                className="text-sm uppercase tracking-[0.3em] transition-colors relative z-20 inline-block py-2"
-                                style={{ color: "var(--white)" }}
-                                onMouseEnter={(e) => e.currentTarget.style.color = "var(--gold)"}
-                                onMouseLeave={(e) => e.currentTarget.style.color = "var(--white)"}
+                    {/* ── FOOTER (Identical to Landing Page) ────────────────────────── */}
+                    <footer
+                      className="relative pt-32 md:pt-48 pb-12 overflow-hidden"
+                      style={{ backgroundColor: DARK_FOOTER.bg, transition: "background-color 0.7s ease" }}
+                    >
+                      <div className="absolute inset-0 z-0 pointer-events-none" style={{ opacity: DARK_FOOTER.footerImg }}>
+                        <Image src="/footer.png" alt="" fill className="object-cover object-center" />
+                      </div>
+                      <div
+                        className="absolute inset-0 z-0 pointer-events-none"
+                        style={{ background: `linear-gradient(to bottom, ${DARK_FOOTER.bg} 0%, transparent 30%, ${DARK_FOOTER.bg} 88%)` }}
+                      />
+
+                      <div ref={footerRef} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24 flex flex-col mb-12">
+                        <Reveal variants={fadeIn}>
+                          <h2 className="text-[10px] tracking-[0.25em] uppercase font-medium mb-12" style={{ color: DARK_FOOTER.textMuted }}>
+                            CONNECT
+                          </h2>
+                        </Reveal>
+                        <motion.h2
+                          className="font-[var(--font-julius)] text-[12vw] tracking-wider uppercase leading-none select-none mb-24"
+                          style={{ color: DARK_FOOTER.watermark }}
+                          variants={stagger}
+                          initial="hidden"
+                          animate={footerInView ? "visible" : "hidden"}
+                        >
+                          <SplitText text="Connect." />
+                        </motion.h2>
+
+                        <motion.div
+                          className="mt-12 flex flex-col items-center text-center border-t pt-12"
+                          style={{ borderColor: DARK_FOOTER.border }}
+                          initial={{ opacity: 0, y: 24 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 1.2, ease: expo, delay: 0.3 }}
+                        >
+                          <div>
+                            <p className="text-[10px] tracking-[0.25em] uppercase mb-4 font-medium" style={{ color: DARK_FOOTER.textMuted }}>Get in touch</p>
+                            <a
+                              href="mailto:subhamprojects99@gmail.com"
+                              className="text-3xl md:text-5xl lg:text-6xl font-light tracking-wide transition-colors duration-700 block mt-6"
+                              style={{ color: DARK_FOOTER.textSub }}
+                              onMouseEnter={e => (e.currentTarget.style.color = DARK_FOOTER.gold)}
+                              onMouseLeave={e => (e.currentTarget.style.color = DARK_FOOTER.textSub)}
                             >
-                                subhamprojects99@gmail.com
-                            </Link>
-                        </div>
-                    </section>
+                              subhamprojects99@gmail.com
+                            </a>
+                          </div>
+                        </motion.div>
+                      </div>
+
+                      <div
+                        className="relative z-10 px-8 md:px-16 lg:px-24 pt-8 flex flex-col items-center justify-center gap-4"
+                        style={{ borderTop: `1px solid ${DARK_FOOTER.border}` }}
+                      >
+                        <span className="text-[9px] tracking-[0.3em] uppercase text-center" style={{ color: DARK_FOOTER.textMuted }}>
+                          Machine Learning & Software Engineering
+                        </span>
+                      </div>
+                    </footer>
                 </main>
             </div>
         </>

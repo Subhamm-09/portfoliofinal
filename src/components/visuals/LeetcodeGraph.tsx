@@ -14,8 +14,10 @@ interface LeetcodeData {
 export default function LeetcodeGraph({ username = "Subham9928", isDark = true }: { username?: string, isDark?: boolean }) {
     const [data, setData] = useState<LeetcodeData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         fetch(`/api/leetcode?username=${username}`)
             .then(res => res.json())
             .then(res => {
@@ -35,8 +37,8 @@ export default function LeetcodeGraph({ username = "Subham9928", isDark = true }
             .catch(() => setLoading(false));
     }, [username]);
 
-    const bg = isDark ? "bg-[#0d0d0d]" : "bg-white";
-    const border = isDark ? "border-white/5" : "border-black/5";
+    const bg = isDark ? "bg-[#111110]" : "bg-[#FAF9F5]";
+    const border = isDark ? "border-white/10" : "border-black/10";
     const textMain = isDark ? "text-white" : "text-black";
     const textSub = isDark ? "text-white/60" : "text-black/60";
     const accent = isDark ? "text-[#C88A6E]" : "text-[#B8445A]";
@@ -44,30 +46,27 @@ export default function LeetcodeGraph({ username = "Subham9928", isDark = true }
 
     return (
         <motion.div 
-            className={`w-full max-w-6xl mx-auto flex flex-col items-center justify-center ${bg} rounded-3xl border ${border} p-8 md:p-12 relative overflow-hidden transition-colors duration-1000 mt-12`}
+            className={`w-full max-w-6xl mx-auto flex flex-col items-center justify-center ${bg} rounded-2xl border ${border} p-8 md:p-12 relative overflow-hidden transition-colors duration-700 mt-12`}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
         >
-            <div className={`absolute inset-0 bg-gradient-to-bl ${isDark ? "from-white/[0.03]" : "from-black/[0.03]"} to-transparent pointer-events-none`} />
-            
             <div className="w-full flex flex-col items-center relative z-10">
-                <h3 className={`${textMain} text-xl md:text-2xl font-bold tracking-[0.3em] uppercase mb-16 transition-colors duration-1000`}>
-                    Leet<span className={accent}>Code</span>
+                <h3 className={`${textMain} text-lg md:text-xl font-light tracking-[0.25em] uppercase mb-16 transition-colors duration-700`}>
+                    Leet<span className={`font-medium ${accent}`}>Code</span>
                 </h3>
                 
                 {loading ? (
-                    <div className={`${textSub} text-sm tracking-widest uppercase flex items-center gap-3 py-12`}>
-                        <span className={`w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin ${accent}`} />
-                        Analyzing LeetCode Matrix...
+                    <div className={`${textSub} text-xs tracking-widest uppercase flex items-center gap-3 py-12 font-mono`}>
+                        <span className={`w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin ${accent}`} />
+                        Loading LeetCode Statistics...
                     </div>
                 ) : data ? (
                     <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8">
                         
                         {/* TOTAL SOLVED (Hero Stat) */}
-                        <div className={`col-span-1 md:col-span-1 flex flex-col items-center justify-center p-8 rounded-2xl border ${border} ${isDark ? "bg-white/[0.02]" : "bg-black/[0.02]"} backdrop-blur-sm relative overflow-hidden group`}>
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-current opacity-0 group-hover:opacity-5 transition-opacity duration-500" style={{ color: accentHex }} />
+                        <div className={`col-span-1 md:col-span-1 flex flex-col items-center justify-center p-8 rounded-xl border ${border} ${isDark ? "bg-white/[0.02]" : "bg-black/[0.02]"} relative overflow-hidden`}>
                             <span className={`${textSub} text-[10px] font-mono tracking-[0.2em] uppercase mb-4`}>Total Solved</span>
                             <span className={`font-serif text-6xl md:text-7xl font-light italic ${textMain}`}>{data.total}</span>
                         </div>

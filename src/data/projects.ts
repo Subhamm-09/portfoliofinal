@@ -1,4 +1,4 @@
-﻿export type Project = {
+export type Project = {
     id: number;
     title: string;
     category: string;
@@ -19,14 +19,16 @@ export const PROJECTS: Project[] = [
         id: 1,
         title: "Underwater Acoustic Classifier",
         category: "MACHINE LEARNING",
-        subtitle: "Perception & Signal Processing",
-        desc: "Deep learning pipeline for real-time marine acoustic classification, processing noisy underwater sensor streams to detect and categorize subsea anomalies.",
-        details: "This project leverages state-of-the-art Convolutional Neural Networks (CNNs) and recurrent architectures to analyze complex acoustic waveforms in real-time. By processing hydrophone data through custom signal-processing pipelines and spectrogram conversions, the system effectively distinguishes between biological signals, ambient ocean noise, and anthropogenic disturbances (such as submarines or vessels) with over 94% accuracy in high-noise environments. Built with Python, PyTorch, Librosa, and deployed on edge computing devices.",
+        subtitle: "Deep Learning & Acoustic Signal Processing",
+        desc: "End-to-end signal processing and machine learning pipeline for classifying underwater hydrophone recordings into Biological, Vessel, and Ambient soundscapes.",
+        details: "An end-to-end audio classification system for underwater soundscapes. Audio is resampled to 16 kHz, normalized, and windowed into 3-second segments before extracting a 155-dimensional feature representation (MFCC, Mel Spectrogram, Chroma, Spectral Centroid, ZCR). Benchmarked across 5 classical ML models (Logistic Regression, KNN, SVM, Random Forest, XGBoost) and a pre-trained YAMNet deep learning transfer architecture achieving 94.8% accuracy. Deployed as a full-featured Streamlit application.",
         color: "#EAE6DE",
         textColor: "#111111",
         img: "/deep_ocean.png",
-        cardImg: "/project_card_1.png",
-        tags: ["PyTorch", "Librosa", "Signal Processing", "Deep Learning"]
+        cardImg: "/Card_1.png",
+        tags: ["Python", "Librosa", "Audio DSP", "Scikit-Learn", "YAMNet", "TensorFlow", "Streamlit"],
+        github: "https://github.com/Subhamm-09/Underwater-Accoustic-Classifier",
+        live: "https://underwater-accoustic-classifier-fcw6yw5jmxbu84tvmzpwfk.streamlit.app/"
     },
     {
         id: 2,
@@ -38,7 +40,7 @@ export const PROJECTS: Project[] = [
         color: "#080718",
         textColor: "#fdfdfd",
         img: "/grid_sentinel.png",
-        cardImg: "/project_card_2.png",
+        cardImg: "/Card_2.png",
         tags: ["NLP", "FastAPI", "ETL Pipelines", "PostgreSQL"]
     },
     {
@@ -51,7 +53,7 @@ export const PROJECTS: Project[] = [
         color: "#EAE6DE",
         textColor: "#111111",
         img: "/neural_vision.png",
-        cardImg: "/project_card_3.png",
+        cardImg: "/Card_3.png",
         tags: ["TensorFlow", "PINNs", "Simulation", "Optimization"]
     },
     {
@@ -63,7 +65,7 @@ export const PROJECTS: Project[] = [
         details: "Critical infrastructure is highly vulnerable to sophisticated zero-day cyber-physical attacks. Anomaly Architect uses unsupervised deep learning (specifically variational autoencoders) trained on months of normal SCADA network traffic and sensor telemetry. Built with TensorFlow and Kafka.",
         color: "#0a0a0a",
         textColor: "#fdfdfd",
-        img: "/4.jpg",
+        img: "/grid_sentinel.png",
         tags: ["Autoencoders", "SCADA", "Cybersecurity", "Kafka"]
     },
     {
@@ -75,7 +77,7 @@ export const PROJECTS: Project[] = [
         details: "Designed to handle microservice architectures at scale, this API gateway serves as the primary ingress point for thousands of requests per second. Written purely in Go to exploit its high-concurrency goroutine model.",
         color: "#181818",
         textColor: "#fdfdfd",
-        img: "/5.jpg",
+        img: "/neural_vision.png",
         tags: ["Go", "Redis", "Distributed Systems", "Concurrency"]
     }
 ];

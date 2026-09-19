@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,10 +18,18 @@ export default function Navigation() {
     const pathname = usePathname();
     const [activeItem, setActiveItem] = useState("");
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const { isDark, toggle } = useTheme();
     const menuRef = useRef<HTMLDivElement>(null);
 
-    const isGoldNav = pathname === "/projects" || pathname === "/skills" || pathname === "/projects/" || pathname === "/skills/";
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        handleScroll();
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     useEffect(() => {
         setActiveItem(pathname);
@@ -69,25 +77,43 @@ export default function Navigation() {
                     left: 0;
                     right: 0;
                     z-index: 9999;
-                    pointer-events: none;
+                    pointer-events: auto;
+                    transition: background-color 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease;
+                }
+
+                .editorial-header.scrolled.dark {
+                    background-color: rgba(16, 16, 15, 0.88);
+                    backdrop-filter: blur(16px);
+                    -webkit-backdrop-filter: blur(16px);
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+                }
+
+                .editorial-header.scrolled.light {
+                    background-color: rgba(252, 251, 249, 0.92);
+                    backdrop-filter: blur(16px);
+                    -webkit-backdrop-filter: blur(16px);
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
                 }
 
                 .nav-container {
                     max-width: 1400px;
                     margin: 0 auto;
-                    padding: 1.5rem 1.25rem;
+                    padding: 1.25rem 1.25rem;
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
+                    transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
                     animation: nav-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
                 }
 
                 @media (min-width: 768px) {
-                    .nav-container { padding: 3rem 3rem; }
+                    .nav-container { padding: 1.75rem 3rem; }
+                    .editorial-header.scrolled .nav-container { padding: 1.1rem 3rem; }
                 }
 
                 @media (min-width: 1024px) {
-                    .nav-container { padding: 3rem 6rem; }
+                    .nav-container { padding: 2rem 6rem; }
+                    .editorial-header.scrolled .nav-container { padding: 1.15rem 6rem; }
                 }
 
                 @keyframes nav-in {
@@ -102,8 +128,7 @@ export default function Navigation() {
                     text-transform: uppercase;
                     font-weight: 600;
                     text-decoration: none;
-                    transition: opacity 0.5s ease;
-                    pointer-events: auto;
+                    transition: color 0.3s ease, opacity 0.3s ease;
                 }
 
                 @media (min-width: 768px) {
@@ -111,17 +136,18 @@ export default function Navigation() {
                 }
 
                 @media (min-width: 1024px) {
-                    .brand-logo { font-size: 1.4rem; }
+                    .brand-logo { font-size: 1.35rem; }
                 }
 
                 .editorial-header.dark .brand-logo { color: #E7E2D8; }
-                .editorial-header.light .brand-logo { color: #1A1A1A; }
+                .editorial-header.dark .brand-logo:hover { color: #C9A96E; }
+                .editorial-header.light .brand-logo { color: #111111; }
+                .editorial-header.light .brand-logo:hover { color: #B8445A; }
 
                 .nav-group {
                     display: flex;
                     align-items: center;
                     gap: 0.75rem;
-                    pointer-events: auto;
                 }
 
                 @media (min-width: 768px) {
@@ -129,7 +155,7 @@ export default function Navigation() {
                 }
 
                 @media (min-width: 1024px) {
-                    .nav-group { gap: 4rem; }
+                    .nav-group { gap: 3.5rem; }
                 }
 
                 /* Desktop Nav Links */
@@ -146,21 +172,20 @@ export default function Navigation() {
                 }
 
                 @media (min-width: 1024px) {
-                    .desktop-nav-links { gap: 3rem; }
+                    .desktop-nav-links { gap: 2.5rem; }
                 }
 
                 .desktop-nav-links a {
                     position: relative;
                     text-decoration: none;
                     font-family: var(--font-inter, 'Inter', sans-serif);
-                    font-size: 0.65rem;
-                    letter-spacing: 0.15em;
+                    font-size: 0.68rem;
+                    letter-spacing: 0.16em;
                     font-weight: 500;
                     display: flex;
                     gap: 0.5rem;
                     align-items: baseline;
-                    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-                    opacity: 0.7;
+                    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                 }
 
                 .desktop-nav-links a::after {
@@ -169,29 +194,34 @@ export default function Navigation() {
                     bottom: -4px;
                     left: 0;
                     width: 100%;
-                    height: 1px;
-                    background-color: currentColor;
+                    height: 1.5px;
                     transform: scaleX(0);
                     transform-origin: right;
-                    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                 }
 
-                .editorial-header.dark .desktop-nav-links a { color: #E7E2D8; }
-                .editorial-header.light .desktop-nav-links a { color: #1A1A1A; }
-
+                .editorial-header.dark .desktop-nav-links a { 
+                    color: rgba(231, 226, 216, 0.75); 
+                }
                 .editorial-header.dark .desktop-nav-links a:hover, 
                 .editorial-header.dark .desktop-nav-links a.pill-active { 
-                    opacity: 1; 
+                    color: #C9A96E;
                     transform: translateY(-1px);
-                    letter-spacing: 0.18em;
                 }
-                
+                .editorial-header.dark .desktop-nav-links a::after {
+                    background-color: #C9A96E;
+                }
+
+                .editorial-header.light .desktop-nav-links a { 
+                    color: rgba(10, 10, 10, 0.70); 
+                }
                 .editorial-header.light .desktop-nav-links a:hover,
                 .editorial-header.light .desktop-nav-links a.pill-active { 
-                    opacity: 1;
                     color: #B8445A !important;
                     transform: translateY(-1px);
-                    letter-spacing: 0.18em;
+                }
+                .editorial-header.light .desktop-nav-links a::after {
+                    background-color: #B8445A;
                 }
 
                 .desktop-nav-links a:hover::after, .desktop-nav-links a.pill-active::after {
@@ -199,14 +229,10 @@ export default function Navigation() {
                     transform-origin: left;
                 }
 
-                .editorial-header.light .desktop-nav-links a::after {
-                    background-color: #B8445A;
-                }
-
                 /* Theme Toggle Pill Button */
                 .theme-toggle-btn {
                     position: relative;
-                    background: ${isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.05)"};
+                    background: ${isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.04)"};
                     border: 1px solid ${isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.1)"};
                     cursor: pointer;
                     display: flex;
@@ -221,7 +247,6 @@ export default function Navigation() {
                     letter-spacing: 0.2em;
                     font-weight: 600;
                     backdrop-filter: blur(12px);
-                    pointer-events: auto;
                 }
 
                 .editorial-header.dark .theme-toggle-btn {
@@ -251,12 +276,11 @@ export default function Navigation() {
                     letter-spacing: 0.2em;
                     font-weight: 600;
                     text-transform: uppercase;
-                    background: ${isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.05)"};
+                    background: ${isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.04)"};
                     border: 1px solid ${isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.1)"};
                     cursor: pointer;
                     transition: all 0.3s ease;
                     backdrop-filter: blur(12px);
-                    pointer-events: auto;
                 }
 
                 @media (min-width: 768px) {
@@ -274,14 +298,9 @@ export default function Navigation() {
                     border-color: ${accentColor};
                     color: ${accentColor};
                 }
-
-                /* Dynamic Gold Override */
-                .editorial-header.gold .brand-logo { color: #C9A34A !important; }
-                .editorial-header.gold .desktop-nav-links a { color: #C9A34A !important; }
-                .editorial-header.gold .desktop-nav-links a::after { background-color: #C9A34A !important; }
             `}</style>
 
-            <header className={`editorial-header ${isDark ? "dark" : "light"} ${isGoldNav ? "gold" : ""}`} suppressHydrationWarning>
+            <header className={`editorial-header ${isDark ? "dark" : "light"} ${scrolled ? "scrolled" : ""}`} suppressHydrationWarning>
                 <div className="nav-container">
                     {/* BRAND LOGO */}
                     <Link href="/" className="brand-logo">
